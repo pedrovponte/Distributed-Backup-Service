@@ -6,6 +6,7 @@ public class Client {
         try {
             if(args.length > 4) {
                 System.out.println("Usage: Client <peer_ap> <sub_protocol> [<opnd_1> [<opnd_2>]]");
+                return;
             }
 
             String peer_ap = args[0];
