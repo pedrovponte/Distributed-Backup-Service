@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.io.*;
 
 public class Peer implements RemoteInterface {
-
     private ChannelController MC;
     private ChannelController MDB;
     private ChannelController MDR;
@@ -21,6 +20,7 @@ public class Peer implements RemoteInterface {
         this.protocolVersion = protocolVersion;
         this.peerId = peerId;
         this.threadExec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(300);
+        System.out.println("--- Created Threads ---");
     }
 
     public static void main(String[] args) {
@@ -31,6 +31,7 @@ public class Peer implements RemoteInterface {
         }
 
         String protocolVersion = args[0];
+        
         int peerId = Integer.parseInt(args[1]);
         String serviceAccessPoint = args[2];
         String mcAddress = args[3];
@@ -40,21 +41,33 @@ public class Peer implements RemoteInterface {
         String mdrAddress = args[7];
         int mdrPort = Integer.parseInt(args[8]);
 
+        System.out.println("Protocol version: " + protocolVersion);
+        System.out.println("Peer Id: " + peerId);
+        System.out.println("Service Access Point: " + serviceAccessPoint);
+        System.out.println("Mc address: " + mcAddress);
+        System.out.println("Mc port: " + mcPort);
+        System.out.println("MDB address: " + mdbAddress);
+        System.out.println("MDB port: " + mdbPort);
+        System.out.println("MDR address: " + mdrAddress);
+        System.out.println("MDR port: " + mdrPort);
+
         Peer peer = new Peer(protocolVersion, peerId);
 
         try {
             RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(peer, 0);
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind(serviceAccessPoint, stub);
+            System.out.println("--- Running RMI Resgistry ---");
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
             ex.printStackTrace();
         }
 
         peer.createChannels(mcAddress, mcPort, mdbAddress, mdbPort, mdrAddress, mdrPort);
+        System.out.println("--- Channels Created ---");
 
         peer.execChannels(); 
-            
+        System.out.println("--- Running Channels ---");
     }
 
     public ChannelController getMC() {
@@ -95,6 +108,10 @@ public class Peer implements RemoteInterface {
     
     @Override
     public void backup(String path, int replication) {
+        FileManager fileManager = new FileManager(path, replication);
+
+        // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
+        // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 
     }
 

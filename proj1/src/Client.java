@@ -5,7 +5,8 @@ public class Client {
     public static void main(String[] args) {
         try {
             if(args.length > 4) {
-                System.out.println("Usage: Client <peer_ap> <sub_protocol> [<opnd_1> [<opnd_2>]]");
+                System.out.println("SIZE: " + args.length);
+                System.out.println("Usage: Client <peer_id> <sub_protocol> [<opnd_1> [<opnd_2>]]");
                 return;
             }
 
