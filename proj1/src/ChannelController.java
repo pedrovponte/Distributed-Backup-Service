@@ -21,6 +21,13 @@ public class ChannelController implements Runnable {
         }
     }
 
+    public void sendMessage(byte[] message) {
+        System.out.println("Going to send");
+        System.out.println("Message: " + message);
+        // criar multicast channel
+        // criar socket e enviar
+    }
+
     public void run() {
 
         // maximum size of a chunk is 64KBytes (body)

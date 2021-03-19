@@ -3,10 +3,12 @@ import java.nio.channels.Channel;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class Peer implements RemoteInterface {
     private ChannelController MC;
@@ -24,14 +26,15 @@ public class Peer implements RemoteInterface {
     }
 
     public static void main(String[] args) {
-        
-        if(args.length != 9) {
-            System.out.println("Usage: Peer <protocol_version> <peer_id> <service_access_point> <MC_IP_address> <MC_port> <MDB_IP_address> <MDB_port> <MDR_IP_address> <MDR_port>");
+
+        if (args.length != 9) {
+            System.out.println(
+                    "Usage: Peer <protocol_version> <peer_id> <service_access_point> <MC_IP_address> <MC_port> <MDB_IP_address> <MDB_port> <MDR_IP_address> <MDR_port>");
             return;
         }
 
         String protocolVersion = args[0];
-        
+
         int peerId = Integer.parseInt(args[1]);
         String serviceAccessPoint = args[2];
         String mcAddress = args[3];
@@ -66,7 +69,7 @@ public class Peer implements RemoteInterface {
         peer.createChannels(mcAddress, mcPort, mdbAddress, mdbPort, mdrAddress, mdrPort);
         System.out.println("--- Channels Created ---");
 
-        peer.execChannels(); 
+        peer.execChannels();
         System.out.println("--- Running Channels ---");
     }
 
@@ -94,7 +97,8 @@ public class Peer implements RemoteInterface {
         return this.threadExec;
     }
 
-    public void createChannels(String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) {
+    public void createChannels(String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress,
+            int mdrPort) {
         this.MC = new ChannelController(mcAddress, mcPort, this);
         this.MDB = new ChannelController(mdbAddress, mdbPort, this);
         this.MDR = new ChannelController(mdrAddress, mdrPort, this);
@@ -102,13 +106,49 @@ public class Peer implements RemoteInterface {
 
     public void execChannels() {
         this.threadExec.execute(this.MC);
-        this.threadExec.execute(this.MDB);
+        this.threadExec.execute(    this.MDB);
         this.threadExec.execute(this.MDR);
     }
-    
+
     @Override
     public void backup(String path, int replication) {
+        System.out.println("before files");
         FileManager fileManager = new FileManager(path, replication);
+        System.out.println("after files");
+
+        ArrayList<Chunk> fileChunks = fileManager.getFileChunks();
+        System.out.println(fileChunks);
+
+        for(int i = 0; i < fileChunks.size(); i++) {
+            System.out.println("inside for");
+            // generate PUTCHUNK message
+            String header = this.protocolVersion + " PUTCHUNK " + this.peerId + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + "\r\n\r\n";
+            try {
+                byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
+                byte[] body = fileChunks.get(i).getChunkMessage();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+                outputStream.write(headerBytes);
+                outputStream.write(body);
+                byte[] message = outputStream.toByteArray( );
+
+                // send threads
+                this.threadExec.execute(new ThreadSendChunks(this.MDB, message));
+            } catch(UnsupportedEncodingException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            } catch(IOException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            }
+
+            
+            
+            
+            
+            // receiver stored messages
+        }
+
+        
 
         // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
@@ -124,7 +164,7 @@ public class Peer implements RemoteInterface {
     public void delete(String path) {
 
     }
-    
+
     @Override
     public void reclaim(int maximum_disk_space) {
 
@@ -134,5 +174,5 @@ public class Peer implements RemoteInterface {
     public void state() {
 
     }
-    
+
 }
