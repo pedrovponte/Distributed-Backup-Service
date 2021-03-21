@@ -18,14 +18,19 @@ public class ChannelController implements Runnable {
         } catch(UnknownHostException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
-        }
+        } 
     }
 
     public void sendMessage(byte[] message) {
         System.out.println("Going to send");
         System.out.println("Message: " + message);
-        // criar multicast channel
-        // criar socket e enviar
+        
+        try(MulticastSocket multicastSocket = new MulticastSocket(this.port)) {
+            DatagramPacket datagramPacket = new DatagramPacket(message, message.length, this.address, this.port);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void run() {
