@@ -17,8 +17,10 @@ public class Peer implements RemoteInterface {
     private String protocolVersion;
     private int peerId;
     private ScheduledThreadPoolExecutor threadExec;
+    private FileStorage storage;
 
     public Peer(String protocolVersion, int peerId) {
+        this.storage = new FileStorage();
         this.protocolVersion = protocolVersion;
         this.peerId = peerId;
         this.threadExec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(300);
@@ -97,6 +99,10 @@ public class Peer implements RemoteInterface {
         return this.threadExec;
     }
 
+    public FileStorage getStorage() {
+        return this.storage;
+    }
+
     public void createChannels(String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress,
             int mdrPort) {
         this.MC = new ChannelController(mcAddress, mcPort, this);
@@ -113,6 +119,7 @@ public class Peer implements RemoteInterface {
     @Override
     public void backup(String path, int replication) {
         FileManager fileManager = new FileManager(path, replication);
+        this.storage.addFile(fileManager);
 
         ArrayList<Chunk> fileChunks = fileManager.getFileChunks();
 

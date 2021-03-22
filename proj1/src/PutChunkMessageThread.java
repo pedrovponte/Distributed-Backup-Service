@@ -29,11 +29,21 @@ public class PutChunkMessageThread implements Runnable {
 
     @Override
     public void run() {
+        // in case senderId and peerId are equal, the thread returns because a peer must never store the chunks of its own files.
         if(checkIfSelf() == 1) {
-            System.out.println("Equals");
+            // System.out.println("Equals");
             return;
         }
-        System.out.println("Not equals");
+        // System.out.println("Not equals");
+
+        //check if the peer already has stored this chunk
+        if(this.peer.getStorage().hasChunk(this.fileId, this.chunkNo) == true) {
+            return;
+        }
+
+        Chunk chunk = new Chunk(this.fileId, this.chunkNo, this.body, this.replication_degree);
+
+        this.peer.getStorage().addChunk(chunk);
 
         
     }
@@ -50,6 +60,7 @@ public class PutChunkMessageThread implements Runnable {
         this.body = Arrays.copyOfRange(this.message, i + 4, message.length); // i+4 because between i and i+4 are \r\n\r\n
     }
 
+    // checks if the senderId is equal to the receiver peerId. In case it is equal, returns 1, else returns 0.
     int checkIfSelf() {
         if(this.peer.getPeerId() == this.senderId) {
             return 1;
