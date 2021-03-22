@@ -112,17 +112,14 @@ public class Peer implements RemoteInterface {
 
     @Override
     public void backup(String path, int replication) {
-        System.out.println("before files");
         FileManager fileManager = new FileManager(path, replication);
-        System.out.println("after files");
 
         ArrayList<Chunk> fileChunks = fileManager.getFileChunks();
-        System.out.println(fileChunks);
 
         for(int i = 0; i < fileChunks.size(); i++) {
-            System.out.println("inside for");
-            // generate PUTCHUNK message
-            String header = this.protocolVersion + " PUTCHUNK " + this.peerId + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + "\r\n\r\n";
+            // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
+            String header = this.protocolVersion + " PUTCHUNK " + this.peerId + " " + fileManager.getFileID() + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + "\r\n\r\n";
+            
             try {
                 byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
                 byte[] body = fileChunks.get(i).getChunkMessage();
@@ -133,6 +130,7 @@ public class Peer implements RemoteInterface {
 
                 // send threads
                 this.threadExec.execute(new ThreadSendChunks(this.MDB, message));
+                System.out.println("Sent: "+ header);
             } catch(UnsupportedEncodingException e) {
                 System.err.println(e.getMessage());
                 e.printStackTrace();
@@ -150,7 +148,7 @@ public class Peer implements RemoteInterface {
 
         
 
-        // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
+        
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 
     }

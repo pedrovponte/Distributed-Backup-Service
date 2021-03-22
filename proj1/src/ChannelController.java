@@ -22,11 +22,14 @@ public class ChannelController implements Runnable {
     }
 
     public void sendMessage(byte[] message) {
-        System.out.println("Going to send");
-        System.out.println("Message: " + message);
-        
+        // System.out.println("Message: " + message);
+
+        // use multicast socket or datagram socket?
+        // Multicast is going to be MUCH more efficient than any form of unicasting, however, multicasting is not reliable,
+        // and does not work across heterogeneous networks like the internet, where the operators tend to disable multicast traffic
         try(MulticastSocket multicastSocket = new MulticastSocket(this.port)) {
             DatagramPacket datagramPacket = new DatagramPacket(message, message.length, this.address, this.port);
+            multicastSocket.send(datagramPacket);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
@@ -43,21 +46,21 @@ public class ChannelController implements Runnable {
         try {
             MulticastSocket multicastSocket = new MulticastSocket(port);
             multicastSocket.joinGroup(address);
-            System.out.println("ChannelController: Join Multicast Group");
+            // System.out.println("ChannelController: Join Multicast Group");
 
             // listens multicast channel
             while(true) {
                 // receive a packet
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 multicastSocket.receive(packet);
-                System.out.println("ChannelController: Received packet");
+                // System.out.println("ChannelController: Received packet");
 
                 byte[] received = Arrays.copyOf(buf, packet.getLength());
                 ManageReceivedMessages manager = new ManageReceivedMessages(this.peer, received);
                 
                 // call a thread to execute the task
                 this.peer.getThreadExec().execute(manager);
-                System.out.println("ChannelController: Thread executing task");
+                // System.out.println("ChannelController: Thread executing task");
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());

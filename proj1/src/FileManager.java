@@ -24,15 +24,19 @@ public class FileManager {
 
         this.file = new File(path);
         String tempFileID = createFileID();
-        System.out.println("Temp File ID: " + tempFileID);
+        // System.out.println("Temp File ID: " + tempFileID);
         this.fileID = createHash256(tempFileID);
-        System.out.println("File ID: " + this.fileID);
+        // System.out.println("File ID: " + this.fileID);
         splitFile();
-        System.out.println("Chunks: " + this.fileChunks);
+        // System.out.println("Chunks: " + this.fileChunks);
     }
 
     public ArrayList<Chunk> getFileChunks() {
         return this.fileChunks;
+    }
+
+    public String getFileID() {
+        return this.fileID;
     }
 
     public String createFileID() {
@@ -41,10 +45,10 @@ public class FileManager {
         long lastModifiedTime = this.file.lastModified();
         long fileSize = this.file.length(); 
 
-        System.out.println("File name: " + fileName);
-        System.out.println("File parent: " + fileParent);
-        System.out.println("Last Modified Time: " + lastModifiedTime);
-        System.out.println("File size: " + fileSize);
+        // System.out.println("File name: " + fileName);
+        // System.out.println("File parent: " + fileParent);
+        // System.out.println("Last Modified Time: " + lastModifiedTime);
+        // System.out.println("File size: " + fileSize);
         
         String id = fileParent + "__" + fileName + "__" + String.valueOf(lastModifiedTime) + "__" + String.valueOf(fileSize);
         return id;

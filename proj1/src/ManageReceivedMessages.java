@@ -1,19 +1,20 @@
 public class ManageReceivedMessages implements Runnable {
 
     private Peer peer;
-    private String[] message;
+    private byte[] message;
 
     public ManageReceivedMessages(Peer peer, byte[] message) {
-        this.peer = peer;
-        String received = new String(message, 0, message.length);
-        String receivedTrim = received.trim(); //returns a copy of this string with leading and trailing white space removed
-        this.message = receivedTrim.split(" ");
+        this.peer = peer; //returns a copy of this string with leading and trailing white space removed
+        this.message = message;
     }
 
     // message: <Version> <MessageType> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
     public void run() {
-        switch (this.message[1]){
+        String[] messageStr = new String(this.message).split(" ");
+        // System.out.println("Manager message: " + messageStr);
+        switch (messageStr[1]){
             case "PUTCHUNK":
+                this.peer.getThreadExec().execute(new PutChunkMessageThread(this.message, this.peer));
                 break;
 
             case "STORED":
