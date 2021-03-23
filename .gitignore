@@ -1,2 +1,4 @@
 
 *.class
+
+proj1/src/peer_*/

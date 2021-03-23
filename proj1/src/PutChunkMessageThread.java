@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.io.*;
 
 public class PutChunkMessageThread implements Runnable {
     private byte[] message;
@@ -31,21 +32,63 @@ public class PutChunkMessageThread implements Runnable {
     public void run() {
         // in case senderId and peerId are equal, the thread returns because a peer must never store the chunks of its own files.
         if(checkIfSelf() == 1) {
-            // System.out.println("Equals");
+            System.out.println("Equals");
             return;
         }
-        // System.out.println("Not equals");
+        System.out.println("Not equals");
 
         //check if the peer already has stored this chunk
         if(this.peer.getStorage().hasChunk(this.fileId, this.chunkNo) == true) {
+            System.out.println("Already has file");
             return;
         }
 
         Chunk chunk = new Chunk(this.fileId, this.chunkNo, this.body, this.replication_degree);
 
         this.peer.getStorage().addChunk(chunk);
+        System.out.println("Added chunk: " + this.peer.getStorage().hasChunk(this.fileId, this.chunkNo));
 
-        
+        // create the chunk file in the peer directory
+        String dir = "peer_" + this.peer.getPeerId();
+        String backupDir = "peer_" + this.peer.getPeerId() + "/" + "backup";
+        String file = "peer_" + this.peer.getPeerId() + "/" + "backup" + "/" + this.fileId + "_" + this.chunkNo;
+        File directory = new File(dir);
+        File backupDirectory = new File(backupDir);
+        File f = new File(file);
+
+        try{
+            if (!directory.exists()){
+                System.out.println("Not exists dir");
+                directory.mkdir();
+                System.out.println("After mkdir directory");
+                backupDirectory.mkdir();
+                System.out.println("After mkdir backup");
+                f.createNewFile();
+                System.out.println("Created file");
+            } 
+            else {
+                if (directory.exists()) {
+                    System.out.println("Directory already exists");
+                    if(backupDirectory.exists()) {
+                        System.out.println("Backup directory already exists");
+                        f.createNewFile();
+                        System.out.println("Created file");
+                    }
+                    else {
+                        backupDirectory.mkdir();
+                        System.out.println("After mkdir backup 1");
+                        f.createNewFile();
+                        System.out.println("Created file");
+                    }
+                } 
+            }
+
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(body);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void splitHeaderAndBody() {

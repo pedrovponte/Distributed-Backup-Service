@@ -1,3 +1,6 @@
+import java.util.*;
+import java.util.concurrent.*;
+
 public class FileStorage {
 
     // Array to store all the files that the peer received as initiator
@@ -8,19 +11,19 @@ public class FileStorage {
 
     public FileStorage() {
         this.filesStored = new ArrayList<FileManager>();
-        this.chunksStored = new ConcurrentHashMap<String, Integer>();
+        this.chunksStored = new ConcurrentHashMap<String, Chunk>();
     }
 
     public ArrayList<FileManager> getFilesStored() {
         return this.filesStored;
     }
 
-    public ConcurrentHashMap<String,Integer> getChunksStored() {
+    public ConcurrentHashMap<String,Chunk> getChunksStored() {
         return this.chunksStored;
     }
 
     public void addFile(FileManager file) {
-        this.files.add(file);
+        this.filesStored.add(file);
     }
 
     public void addChunk(Chunk chunk) {
@@ -30,7 +33,7 @@ public class FileStorage {
         this.chunksStored.put((fileId + "_" + chunkNo), chunk);
     }
 
-    public void getChunk(String fileId, int chunkNo) {
+    public Chunk getChunk(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
         Chunk chunk = this.chunksStored.get(chunkId);
 

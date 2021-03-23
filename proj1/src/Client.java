@@ -29,6 +29,11 @@ public class Client {
 
                     file_path_name = args[2];
                     replication_degree = Integer.parseInt(args[3]);
+                    
+                    if(replication_degree > 9) {
+                        return;
+                    }
+
                     System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
                     System.out.println("File path: " + file_path_name);

@@ -18,3 +18,8 @@ Inside src folder: start rmiregistry
   - java Client <peer_ap> BACKUP <file_path_name> <replication_degree>
   - (ex.) java Client Peer1 BACKUP "D:\U. Porto\3 ano\2 semestre\sdis_09\proj1\pinguim.png" 2
 
+
+
+**Doubts**
+
+* Because UDP is not reliable, a peer that has stored a chunk must reply with a STORED message to every PUTCHUNK message it receives -> neste caso, apenas os peers que guardaram determinado chunk dessa vez devem responder STORED ou os que anteriormente ja teriam guardado tambem devem responder?
