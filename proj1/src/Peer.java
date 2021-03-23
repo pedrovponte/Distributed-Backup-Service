@@ -136,8 +136,8 @@ public class Peer implements RemoteInterface {
                 byte[] message = outputStream.toByteArray( );
 
                 // send threads
-                this.threadExec.execute(new ThreadSendChunks(this.MDB, message));
-                System.out.println("Sent: "+ header);
+                this.threadExec.execute(new ThreadSendMessages(this.MDB, message));
+                System.out.println("SENT: "+ header);
             } catch(UnsupportedEncodingException e) {
                 System.err.println(e.getMessage());
                 e.printStackTrace();

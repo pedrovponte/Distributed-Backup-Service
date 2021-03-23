@@ -1,5 +1,7 @@
 import java.util.Arrays;
 import java.io.*;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class PutChunkMessageThread implements Runnable {
     private byte[] message;
@@ -89,6 +91,15 @@ public class PutChunkMessageThread implements Runnable {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
+        Random r = new Random();
+        int low = 0;
+        int high = 400;
+        int result = r.nextInt(high-low) + low;
+        // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+        String header = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + "\r\n\r\n";
+        this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), header.getBytes()), result, TimeUnit.MILLISECONDS);
+        System.out.println("SENT: " + header);
     }
 
     public void splitHeaderAndBody() {

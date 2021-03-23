@@ -1,8 +1,8 @@
-public class ThreadSendChunks implements Runnable {
+public class ThreadSendMessages implements Runnable {
     private byte[] message;
     private ChannelController channel;
 
-    public ThreadSendChunks(ChannelController channel, byte[] message) {
+    public ThreadSendMessages(ChannelController channel, byte[] message) {
         this.message = message;
         this.channel = channel;
     }
