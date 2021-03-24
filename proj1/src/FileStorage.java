@@ -77,7 +77,7 @@ public class FileStorage {
 
     public synchronized void createRegisterToStore(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
-        this.storedMessagesReceived.put(chunkId, 1);
+        this.storedMessagesReceived.put(chunkId, 0);
     }
 
     public boolean hasRegisterStore(String fileId, int chunkNo) {

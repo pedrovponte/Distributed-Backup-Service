@@ -15,7 +15,7 @@ public class StoredMessageThread implements Runnable {
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
         splitHeader();
         String[] messageStr = new String(this.header).split(" ");
-        System.out.println("Message: " + messageStr[0] + " " + messageStr[1] + " " + messageStr[2] + " " + messageStr[3] + " " + messageStr[4]);
+        // System.out.println("Message: " + messageStr[0] + " " + messageStr[1] + " " + messageStr[2] + " " + messageStr[3] + " " + messageStr[4]);
         String version = messageStr[0];
         int senderId = Integer.parseInt(messageStr[2]);
         String fileId = messageStr[3];
@@ -28,7 +28,6 @@ public class StoredMessageThread implements Runnable {
 
         if(this.peer.getPeerId() != senderId) {
             System.out.println("Different peer and sender");
-            System.out.println("HAS CHUNK: " + this.peer.getStorage().hasChunk(fileId, chunkNo));
             if(this.peer.getStorage().hasRegisterStore(fileId, chunkNo)) {
                 System.out.println("Has regist");
                 this.peer.getStorage().incrementStoredMessagesReceived(fileId, chunkNo);

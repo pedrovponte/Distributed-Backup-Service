@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
@@ -112,7 +113,7 @@ public class Peer implements RemoteInterface {
 
     public void execChannels() {
         this.threadExec.execute(this.MC);
-        this.threadExec.execute(    this.MDB);
+        this.threadExec.execute(this.MDB);
         this.threadExec.execute(this.MDR);
     }
 
@@ -133,11 +134,16 @@ public class Peer implements RemoteInterface {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
                 outputStream.write(headerBytes);
                 outputStream.write(body);
-                byte[] message = outputStream.toByteArray( );
+                byte[] message = outputStream.toByteArray();
+                
+                if(!(this.storage.hasRegisterStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo()))) {
+                    this.storage.createRegisterToStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo());
+                }
 
-                this.storage.createRegisterToStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo());
                 // send threads
                 this.threadExec.execute(new ThreadSendMessages(this.MDB, message));
+                this.threadExec.schedule(new ThreadCountStored(this, replication, fileManager.getFileID(), i, this.MDB, message), 1, TimeUnit.SECONDS);
+
                 System.out.println("SENT: "+ header);
             } catch(UnsupportedEncodingException e) {
                 System.err.println(e.getMessage());
@@ -146,19 +152,7 @@ public class Peer implements RemoteInterface {
                 System.err.println(e.getMessage());
                 e.printStackTrace();
             }
-
-            
-            
-            
-            
-            // receiver stored messages
         }
-
-        
-
-        
-        // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-
     }
 
     @Override
