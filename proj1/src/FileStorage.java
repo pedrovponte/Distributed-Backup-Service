@@ -59,7 +59,7 @@ public class FileStorage {
         }
     }
 
-    public void incrementStoredMessagesReceived(String fileId, int chunkNo) {
+    public synchronized void incrementStoredMessagesReceived(String fileId, int chunkNo) { // put syncronized
         String chunkId = fileId + "_" + chunkNo;
 
         if(this.storedMessagesReceived.containsKey(chunkId)) {
@@ -73,6 +73,21 @@ public class FileStorage {
         }
 
         // System.out.println("Contains: " + this.storedMessagesReceived.containsKey(chunkId));
+    }
+
+    public synchronized void createRegisterToStore(String fileId, int chunkNo) {
+        String chunkId = fileId + "_" + chunkNo;
+        this.storedMessagesReceived.put(chunkId, 1);
+    }
+
+    public boolean hasRegisterStore(String fileId, int chunkNo) {
+        String chunkId = fileId + "_" + chunkNo;
+        if(this.storedMessagesReceived.containsKey(chunkId)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
 

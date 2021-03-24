@@ -135,6 +135,7 @@ public class Peer implements RemoteInterface {
                 outputStream.write(body);
                 byte[] message = outputStream.toByteArray( );
 
+                this.storage.createRegisterToStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo());
                 // send threads
                 this.threadExec.execute(new ThreadSendMessages(this.MDB, message));
                 System.out.println("SENT: "+ header);

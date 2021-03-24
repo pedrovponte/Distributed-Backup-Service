@@ -99,6 +99,7 @@ public class PutChunkMessageThread implements Runnable {
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
         String toSend = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + " " + "\r\n\r\n";
         this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()), result, TimeUnit.MILLISECONDS);
+        System.out.println("SENT: " + toSend);
     }
 
     public void splitHeaderAndBody() {
