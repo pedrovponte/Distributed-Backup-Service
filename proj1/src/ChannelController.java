@@ -53,14 +53,12 @@ public class ChannelController implements Runnable {
                 // receive a packet
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 multicastSocket.receive(packet);
-                // System.out.println("ChannelController: Received packet");
 
                 byte[] received = Arrays.copyOf(buf, packet.getLength());
                 ManageReceivedMessages manager = new ManageReceivedMessages(this.peer, received);
                 
                 // call a thread to execute the task
                 this.peer.getThreadExec().execute(manager);
-                // System.out.println("ChannelController: Thread executing task");
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());

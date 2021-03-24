@@ -18,6 +18,7 @@ public class ManageReceivedMessages implements Runnable {
                 break;
 
             case "STORED":
+                this.peer.getThreadExec().execute(new StoredMessageThread(this.message, this.peer));
                 break;
                 
             default:

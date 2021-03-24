@@ -125,7 +125,7 @@ public class Peer implements RemoteInterface {
 
         for(int i = 0; i < fileChunks.size(); i++) {
             // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
-            String header = this.protocolVersion + " PUTCHUNK " + this.peerId + " " + fileManager.getFileID() + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + "\r\n\r\n";
+            String header = this.protocolVersion + " PUTCHUNK " + this.peerId + " " + fileManager.getFileID() + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + " " + "\r\n\r\n";
             
             try {
                 byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);

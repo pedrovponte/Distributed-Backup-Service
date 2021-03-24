@@ -60,27 +60,27 @@ public class PutChunkMessageThread implements Runnable {
 
         try{
             if (!directory.exists()){
-                System.out.println("Not exists dir");
+                // System.out.println("Not exists dir");
                 directory.mkdir();
                 System.out.println("After mkdir directory");
                 backupDirectory.mkdir();
-                System.out.println("After mkdir backup");
+                // System.out.println("After mkdir backup");
                 f.createNewFile();
-                System.out.println("Created file");
+                // System.out.println("Created file");
             } 
             else {
                 if (directory.exists()) {
-                    System.out.println("Directory already exists");
+                    // System.out.println("Directory already exists");
                     if(backupDirectory.exists()) {
-                        System.out.println("Backup directory already exists");
+                        // System.out.println("Backup directory already exists");
                         f.createNewFile();
-                        System.out.println("Created file");
+                        // System.out.println("Created file");
                     }
                     else {
                         backupDirectory.mkdir();
-                        System.out.println("After mkdir backup 1");
+                        // System.out.println("After mkdir backup 1");
                         f.createNewFile();
-                        System.out.println("Created file");
+                        // System.out.println("Created file");
                     }
                 } 
             }
@@ -97,9 +97,8 @@ public class PutChunkMessageThread implements Runnable {
         int high = 400;
         int result = r.nextInt(high-low) + low;
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-        String header = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + "\r\n\r\n";
-        this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), header.getBytes()), result, TimeUnit.MILLISECONDS);
-        System.out.println("SENT: " + header);
+        String toSend = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + " " + "\r\n\r\n";
+        this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()), result, TimeUnit.MILLISECONDS);
     }
 
     public void splitHeaderAndBody() {

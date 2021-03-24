@@ -34,10 +34,10 @@ public class Client {
                         return;
                     }
 
-                    System.out.println("Peer_ap: " + peer_ap);
+                    /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
                     System.out.println("File path: " + file_path_name);
-                    System.out.println("Replication: " + replication_degree);
+                    System.out.println("Replication: " + replication_degree);*/
                     stub.backup(file_path_name, replication_degree);
                     break;
                 
@@ -49,9 +49,9 @@ public class Client {
                     }
 
                     file_path_name = args[2];
-                    System.out.println("Peer_ap: " + peer_ap);
+                    /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
-                    System.out.println("File path: " + file_path_name);
+                    System.out.println("File path: " + file_path_name);*/
                     stub.restore(file_path_name);
                     break;
 
@@ -63,9 +63,9 @@ public class Client {
                     }
 
                     file_path_name = args[2];
-                    System.out.println("Peer_ap: " + peer_ap);
+                    /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
-                    System.out.println("File path: " + file_path_name);
+                    System.out.println("File path: " + file_path_name);*/
                     stub.restore(file_path_name);
                     break;
 
@@ -77,9 +77,9 @@ public class Client {
                     }
 
                     maximum_disk_space = Integer.parseInt(args[2]);
-                    System.out.println("Peer_ap: " + peer_ap);
+                    /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
-                    System.out.println("Maximum disk: " + maximum_disk_space);
+                    System.out.println("Maximum disk: " + maximum_disk_space);*/
                     stub.reclaim(maximum_disk_space);
                     break;
 
@@ -90,8 +90,8 @@ public class Client {
                         return;
                     }
 
-                    System.out.println("Peer_ap: " + peer_ap);
-                    System.out.println("Subprotocol: " + subprotocol);
+                    /*System.out.println("Peer_ap: " + peer_ap);
+                    System.out.println("Subprotocol: " + subprotocol);*/
                     stub.state();
                     break;
 

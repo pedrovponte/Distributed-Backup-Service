@@ -23,3 +23,5 @@ Inside src folder: start rmiregistry
 **Doubts**
 
 * Because UDP is not reliable, a peer that has stored a chunk must reply with a STORED message to every PUTCHUNK message it receives -> neste caso, apenas os peers que guardaram determinado chunk dessa vez devem responder STORED ou os que anteriormente ja teriam guardado tambem devem responder?
+
+* When a peer sends a STORED message, all the others should receive and increment the counter of the chunk or only the initiator peer shoul increment?
