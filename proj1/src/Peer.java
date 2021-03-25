@@ -93,7 +93,7 @@ public class Peer implements RemoteInterface {
             RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(peer, 0);
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind(serviceAccessPoint, stub);
-            System.out.println("--- Running RMI Resgistry ---");
+            System.out.println("--- Running RMI Registry ---");
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
             ex.printStackTrace();
@@ -151,6 +151,13 @@ public class Peer implements RemoteInterface {
 
     @Override
     public void backup(String path, int replication) {
+        File backupFile = new File(path);
+
+        if(!backupFile.exists()) {
+            System.out.println("The file - " + path + " - doesn't exist.");
+            return;
+        }
+
         FileManager fileManager = new FileManager(path, replication);
         storage.addFile(fileManager);
 
@@ -158,7 +165,7 @@ public class Peer implements RemoteInterface {
 
         for(int i = 0; i < fileChunks.size(); i++) {
             // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
-            String header = this.protocolVersion + " PUTCHUNK " + peerId + " " + fileManager.getFileID() + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + " " + "\r\n\r\n";
+            String header = this.protocolVersion + " PUTCHUNK " + peerId + " " + fileManager.getFileID() + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + " \r\n\r\n";
             
             try {
                 byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
@@ -194,7 +201,32 @@ public class Peer implements RemoteInterface {
 
     @Override
     public void delete(String path) {
+        // <Version> DELETE <SenderId> <FileId> <CRLF><CRLF>
+        File backupFile = new File(path);
 
+        if(!backupFile.exists()) {
+            System.out.println("The file - " + path + " - doesn't exist.");
+            return;
+        }
+        
+        ArrayList<FileManager> files = this.getStorage().getFilesStored();
+
+        for(int i = 0; i < files.size(); i++) {
+            if(files.get(i).getPath().equals(path)) {
+                // This message does not elicit any response message. An implementation may send this message as many times as it is deemed necessary
+                for(int j = 0; j < 5; j++) {
+                    String message = this.protocolVersion + " DELETE " + peerId + " " + files.get(i).getFileID() + " \r\n\r\n";
+                    try {
+                        this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
+
+                        System.out.println("SENT: " + message);
+                    } catch (Exception e) {
+                        System.err.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     @Override

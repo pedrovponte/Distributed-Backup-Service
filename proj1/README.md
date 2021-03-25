@@ -31,3 +31,5 @@ Inside src folder: start rmiregistry
 * in the 5 attempts that the initiator peer should do in order to receive all the STORED messages in order to have the replication needed, the first time that the initiator peer sends the PUTCHUNK counts to this 5 or not?
 
 * when a peer replies to the PUTCHUNK message for the second time, the initiator peer should increment the number of chunks or ignore this one? should we reset the counter if the peer not receives all the stored messages before we create another thread?
+
+* quando o initiator peer recebe uma mensagem de delete, deve verificar se contem esse ficheiro na lista de ficheiros que anteriormente tinha feito backup e so enviar as mensagens para os outros peers caso tenha feito backup desse ficheiro, ou deve enviar na mesma as mensagens de delete para os outros peers para estes eliminarem os ficheiros caso tenham chunks de backups de outros peers que nao o initiator peer deste caso?
