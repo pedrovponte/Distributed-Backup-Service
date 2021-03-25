@@ -10,22 +10,52 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.*;
 
 public class Peer implements RemoteInterface {
     private ChannelController MC;
     private ChannelController MDB;
     private ChannelController MDR;
     private String protocolVersion;
-    private int peerId;
+    private static int peerId;
     private ScheduledThreadPoolExecutor threadExec;
-    private FileStorage storage;
+    private static FileStorage storage;
 
-    public Peer(String protocolVersion, int peerId) {
-        this.storage = new FileStorage();
+    public Peer(String protocolVersion, int id) {
         this.protocolVersion = protocolVersion;
-        this.peerId = peerId;
+        peerId = id;
+        System.out.println("ID: " + peerId);
         this.threadExec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(300);
         System.out.println("--- Created Threads ---");
+
+        if(new File("peer_" + peerId + "/storage.ser").exists()) {
+            System.out.println("Exists");
+            deserialization();
+        }
+        else {
+            storage = new FileStorage();
+        }
+
+        ConcurrentHashMap<String, Integer> stored = this.getStorage().getStoredMessagesReceived();
+        System.out.println("-------STORED-------");
+        for(String key : stored.keySet()) {
+            System.out.println("Key: " + key);
+            System.out.println("Value: " + stored.get(key));
+        }
+
+        ArrayList<FileManager> files = this.getStorage().getFilesStored();
+        System.out.println("-------FILES-------");
+        for(int i = 0; i < files.size(); i++) {
+            System.out.println("Key: " + i);
+            System.out.println("Value: " + files.get(i).getPath());
+        }
+
+        ConcurrentHashMap<String, Chunk> chunks = this.getStorage().getChunksStored();
+        System.out.println("-------CHUNKS-------");
+        for(String key : chunks.keySet()) {
+            System.out.println("Key: " + key);
+            System.out.println("Value: " + chunks.get(key));
+        }
     }
 
     public static void main(String[] args) {
@@ -74,6 +104,8 @@ public class Peer implements RemoteInterface {
 
         peer.execChannels();
         System.out.println("--- Running Channels ---");
+
+        Runtime.getRuntime().addShutdownHook(new Thread(Peer::serialization));
     }
 
     public ChannelController getMC() {
@@ -92,8 +124,8 @@ public class Peer implements RemoteInterface {
         return this.protocolVersion;
     }
 
-    public int getPeerId() {
-        return this.peerId;
+    public static int getPeerId() {
+        return peerId;
     }
 
     public ScheduledThreadPoolExecutor getThreadExec() {
@@ -101,7 +133,7 @@ public class Peer implements RemoteInterface {
     }
 
     public FileStorage getStorage() {
-        return this.storage;
+        return storage;
     }
 
     public void createChannels(String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress,
@@ -120,13 +152,13 @@ public class Peer implements RemoteInterface {
     @Override
     public void backup(String path, int replication) {
         FileManager fileManager = new FileManager(path, replication);
-        this.storage.addFile(fileManager);
+        storage.addFile(fileManager);
 
         ArrayList<Chunk> fileChunks = fileManager.getFileChunks();
 
         for(int i = 0; i < fileChunks.size(); i++) {
             // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
-            String header = this.protocolVersion + " PUTCHUNK " + this.peerId + " " + fileManager.getFileID() + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + " " + "\r\n\r\n";
+            String header = this.protocolVersion + " PUTCHUNK " + peerId + " " + fileManager.getFileID() + " " + fileChunks.get(i).getChunkNo() + " " + fileChunks.get(i).getReplication() + " " + "\r\n\r\n";
             
             try {
                 byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
@@ -136,8 +168,8 @@ public class Peer implements RemoteInterface {
                 outputStream.write(body);
                 byte[] message = outputStream.toByteArray();
                 
-                if(!(this.storage.hasRegisterStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo()))) {
-                    this.storage.createRegisterToStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo());
+                if(!(storage.hasRegisterStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo()))) {
+                    storage.createRegisterToStore(fileManager.getFileID(), fileChunks.get(i).getChunkNo());
                 }
 
                 // send threads
@@ -175,4 +207,53 @@ public class Peer implements RemoteInterface {
 
     }
 
+    // https://www.tutorialspoint.com/java/java_serialization.htm
+    public void deserialization() {
+        System.out.println("Deserializing data");
+        try {
+            String fileName = "peer_" + this.peerId + "/storage.ser";
+            
+
+            FileInputStream fileIn = new FileInputStream(fileName);
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            storage = (FileStorage) in.readObject();
+            in.close();
+            fileIn.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+            return;
+        } catch (ClassNotFoundException c) {
+            System.out.println("Storage class not found");
+            c.printStackTrace();
+            return;
+        }
+    }
+
+    // https://www.tutorialspoint.com/java/java_serialization.htm
+    private static void serialization() {
+        System.out.println("Serializing data");
+        try {
+            String fileName = "peer_" + getPeerId() + "/storage.ser";
+            File directory = new File("peer_" + getPeerId());
+
+            if (!directory.exists()){
+                // System.out.println("Not exists dir");
+                directory.mkdir();
+                (new File(fileName)).createNewFile();
+            } 
+            else if(directory.exists()) {
+                if(!(new File(fileName).exists())) {
+                    (new File(fileName)).createNewFile();
+                }
+            }
+
+            FileOutputStream fileOut = new FileOutputStream(fileName);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(storage);
+            out.close();
+            fileOut.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+    }
 }

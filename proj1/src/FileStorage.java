@@ -1,7 +1,7 @@
 import java.util.*;
 import java.util.concurrent.*;
 
-public class FileStorage {
+public class FileStorage implements java.io.Serializable {
 
     // Array to store all the files that the peer received as initiator
     private ArrayList<FileManager> filesStored;

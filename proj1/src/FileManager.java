@@ -10,7 +10,7 @@ import java.util.Arrays;
 import javax.management.RuntimeErrorException;
 
 
-public class FileManager {
+public class FileManager implements java.io.Serializable {
     private String path;
     private int replication;
     private File file;
@@ -37,6 +37,10 @@ public class FileManager {
 
     public String getFileID() {
         return this.fileID;
+    }
+
+    public String getPath() {
+        return this.path;
     }
 
     public String createFileID() {
