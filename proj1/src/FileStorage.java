@@ -59,7 +59,7 @@ public class FileStorage implements java.io.Serializable {
         }
     }
 
-    public synchronized void incrementStoredMessagesReceived(String fileId, int chunkNo) { // put syncronized
+    public synchronized void incrementStoredMessagesReceived(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
 
         if(this.storedMessagesReceived.containsKey(chunkId)) {
@@ -73,6 +73,23 @@ public class FileStorage implements java.io.Serializable {
         }
 
         // System.out.println("Contains: " + this.storedMessagesReceived.containsKey(chunkId));
+    }
+
+    public void deleteChunk(String chunkId) {
+        this.chunksStored.remove(chunkId);
+    }
+
+    public void deleteFile(FileManager file) {
+        for(int i = 0; i < filesStored.size(); i++) {
+            if(filesStored.get(i).getFileID().equals(file.getFileID())) {
+                this.filesStored.remove(i);
+                return;
+            }
+        }
+    }
+
+    public void deleteStoreMessage(String chunkId) {
+        this.storedMessagesReceived.remove(chunkId);
     }
 
     public synchronized void createRegisterToStore(String fileId, int chunkNo) {

@@ -66,7 +66,7 @@ public class Client {
                     /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
                     System.out.println("File path: " + file_path_name);*/
-                    stub.restore(file_path_name);
+                    stub.delete(file_path_name);
                     break;
 
                 case "RECLAIM":

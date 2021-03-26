@@ -202,6 +202,7 @@ public class Peer implements RemoteInterface {
     @Override
     public void delete(String path) {
         // <Version> DELETE <SenderId> <FileId> <CRLF><CRLF>
+        System.out.println("Inside delete");
         File backupFile = new File(path);
 
         if(!backupFile.exists()) {
@@ -225,6 +226,18 @@ public class Peer implements RemoteInterface {
                         e.printStackTrace();
                     }
                 }
+
+                ConcurrentHashMap<String,Integer> storedMessages = this.getStorage().getStoredMessagesReceived();
+                for(String key : storedMessages.keySet()) {
+                    for(int k = 0; k < files.get(i).getChunkNo(); k++) {
+                        String chunkId = files.get(i).getFileID() + "_" + k;
+                        if(key.equals(chunkId)) {
+                            this.getStorage().deleteStoreMessage(chunkId);
+                        }
+                    }
+                }
+                this.getStorage().deleteFile(files.get(i));
+                break;
             }
         }
     }
@@ -243,7 +256,7 @@ public class Peer implements RemoteInterface {
     public void deserialization() {
         System.out.println("Deserializing data");
         try {
-            String fileName = "peer_" + this.peerId + "/storage.ser";
+            String fileName = "peer_" + peerId + "/storage.ser";
             
 
             FileInputStream fileIn = new FileInputStream(fileName);

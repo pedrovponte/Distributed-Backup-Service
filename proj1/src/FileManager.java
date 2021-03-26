@@ -16,6 +16,7 @@ public class FileManager implements java.io.Serializable {
     private File file;
     private String fileID;
     private ArrayList<Chunk> fileChunks;
+    private int chunkNo;
 
     public FileManager(String path, int replication) {
         this.path = path;
@@ -41,6 +42,10 @@ public class FileManager implements java.io.Serializable {
 
     public String getPath() {
         return this.path;
+    }
+
+    public int getChunkNo() {
+        return this.chunkNo;
     }
 
     public String createFileID() {
@@ -82,25 +87,26 @@ public class FileManager implements java.io.Serializable {
     public void splitFile() {
         int readBytes;
         byte[] buf = new byte[64000];
-        int chunkNo = 0;
+        this.chunkNo = 0;
 
         try(FileInputStream fileInputStream = new FileInputStream(this.file); BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
             while((readBytes = bufferedInputStream.read(buf)) > 0) {
                 byte[] chunkMessage = Arrays.copyOf(buf, readBytes);
 
-                Chunk chunk = new Chunk(fileID, chunkNo, chunkMessage, this.replication);
+                Chunk chunk = new Chunk(fileID, this.chunkNo, chunkMessage, this.replication);
                 this.fileChunks.add(chunk);
 
                 buf = new byte[64000];
-                chunkNo++;
+                this.chunkNo++;
             }
 
             // The maximum size of each chunks 64KByte (where K stands for 1000). All chunks of a file, except possibly the last
             // one, have the maximum size. The size of the last chunk is always shorter than that size. If the file size is a 
             // multiple of the chunk size, the last chunk has size 0
             if(this.file.length() % 64000 == 0) {
-                Chunk chunk = new Chunk(fileID, chunkNo, null, this.replication);
+                Chunk chunk = new Chunk(fileID, this.chunkNo, null, this.replication);
                 this.fileChunks.add(chunk);
+                this.chunkNo++;
             }
         } catch(IOException e) {
             e.printStackTrace();

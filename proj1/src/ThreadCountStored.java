@@ -60,7 +60,7 @@ public class ThreadCountStored implements Runnable {
             }
         }
         
-        if(storedReplications < this.replication && this.tries < 5) {
+        if(storedReplications < this.replication && this.tries < 4) {
             this.peer.getThreadExec().execute(new ThreadSendMessages(this.channel, this.message));
             String[] messageArr = (new String(this.message).toString()).split(" ");
             System.out.println("SENT: "+ messageArr[0] + " " + messageArr[1] + " " + messageArr[2] + " " + messageArr[3] + " " + messageArr[4]);
