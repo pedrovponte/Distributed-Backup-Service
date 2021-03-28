@@ -34,14 +34,22 @@ public class PutChunkMessageThread implements Runnable {
     public void run() {
         // in case senderId and peerId are equal, the thread returns because a peer must never store the chunks of its own files.
         if(checkIfSelf() == 1) {
-            System.out.println("Equals");
+            // System.out.println("Equals");
             return;
         }
-        System.out.println("Not equals");
+        // System.out.println("Not equals");
 
         //check if the peer already has stored this chunk
         if(this.peer.getStorage().hasChunk(this.fileId, this.chunkNo) == true) {
-            System.out.println("Already has file");
+            System.out.println("Already has chunk");
+            Random r = new Random();
+            int low = 0;
+            int high = 400;
+            int result = r.nextInt(high-low) + low;
+            // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+            String toSend = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + " " + "\r\n\r\n";
+            this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()), result, TimeUnit.MILLISECONDS);
+            System.out.println("SENT: " + toSend);
             return;
         }
 
@@ -62,7 +70,7 @@ public class PutChunkMessageThread implements Runnable {
             if (!directory.exists()){
                 // System.out.println("Not exists dir");
                 directory.mkdir();
-                System.out.println("After mkdir directory");
+                // System.out.println("After mkdir directory");
                 backupDirectory.mkdir();
                 // System.out.println("After mkdir backup");
                 f.createNewFile();

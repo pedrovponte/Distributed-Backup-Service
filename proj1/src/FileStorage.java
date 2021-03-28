@@ -12,10 +12,14 @@ public class FileStorage implements java.io.Serializable {
     // key = fileId_chunkNo; value = number of stored messages received
     private ConcurrentHashMap<String, Integer> storedMessagesReceived;
 
+    // key = sendId; value = fileId_chunkNo 
+    private ConcurrentHashMap<Integer, ArrayList<String>> chunksDistribution;
+
     public FileStorage() {
         this.filesStored = new ArrayList<FileManager>();
         this.chunksStored = new ConcurrentHashMap<String, Chunk>();
         this.storedMessagesReceived = new ConcurrentHashMap<String, Integer>();
+        this.chunksDistribution = new ConcurrentHashMap<Integer, ArrayList<String>>();
     }
 
     public ArrayList<FileManager> getFilesStored() {
@@ -35,6 +39,10 @@ public class FileStorage implements java.io.Serializable {
         Chunk chunk = this.chunksStored.get(chunkId);
 
         return chunk;
+    }
+
+    public ConcurrentHashMap<Integer,ArrayList<String>> getChunksDistribution() {
+        return this.chunksDistribution;
     }
 
     public void addFile(FileManager file) {
@@ -59,7 +67,7 @@ public class FileStorage implements java.io.Serializable {
         }
     }
 
-    public synchronized void incrementStoredMessagesReceived(String fileId, int chunkNo) {
+    public synchronized void incrementStoredMessagesReceived(int senderId, String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
 
         if(this.storedMessagesReceived.containsKey(chunkId)) {
@@ -72,6 +80,28 @@ public class FileStorage implements java.io.Serializable {
             // System.out.println("Not exists regist");
         }
 
+        if(this.chunksDistribution.containsKey(senderId)) {
+            ArrayList<String> f = this.chunksDistribution.get(senderId);
+            if(!(f.contains(chunkId))) {
+                //System.out.println("Add regist to sender");
+                this.chunksDistribution.get(senderId).add(chunkId);
+            }
+            /*else {
+                System.out.println("registed");
+            }*/
+        }
+        else {
+            ArrayList<String> app = new ArrayList<String>();
+            app.add(chunkId);
+            this.chunksDistribution.put(senderId, app);
+            //System.out.println("Add sender and regist");
+        }
+
+        /*System.out.println("-----REGISTS-------------");
+        for(Integer key : this.chunksDistribution.keySet()) {
+            System.out.println(key + ": " + this.chunksDistribution.get(key));  
+        }
+        System.out.println("--------------------------");*/
         // System.out.println("Contains: " + this.storedMessagesReceived.containsKey(chunkId));
     }
 

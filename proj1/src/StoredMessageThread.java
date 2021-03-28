@@ -27,10 +27,11 @@ public class StoredMessageThread implements Runnable {
         // System.out.println("ChunkNo: " + chunkNo);
 
         if(this.peer.getPeerId() != senderId) {
-            System.out.println("Different peer and sender");
+            //System.out.println("Different peer and sender");
             if(this.peer.getStorage().hasRegisterStore(fileId, chunkNo)) {
-                System.out.println("Has regist");
-                this.peer.getStorage().incrementStoredMessagesReceived(fileId, chunkNo);
+                //System.out.println("Has regist");
+                this.peer.getStorage().incrementStoredMessagesReceived(senderId, fileId, chunkNo);
+
                 System.out.println("RECEIVED: " + new String(this.message));
             }
         }

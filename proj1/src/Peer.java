@@ -29,7 +29,6 @@ public class Peer implements RemoteInterface {
         System.out.println("--- Created Threads ---");
 
         if(new File("peer_" + peerId + "/storage.ser").exists()) {
-            System.out.println("Exists");
             deserialization();
         }
         else {
@@ -42,6 +41,7 @@ public class Peer implements RemoteInterface {
             System.out.println("Key: " + key);
             System.out.println("Value: " + stored.get(key));
         }
+        System.out.println("Total: " + stored.size());
 
         ArrayList<FileManager> files = this.getStorage().getFilesStored();
         System.out.println("-------FILES-------");
@@ -49,6 +49,7 @@ public class Peer implements RemoteInterface {
             System.out.println("Key: " + i);
             System.out.println("Value: " + files.get(i).getPath());
         }
+        System.out.println("Total: " + files.size());
 
         ConcurrentHashMap<String, Chunk> chunks = this.getStorage().getChunksStored();
         System.out.println("-------CHUNKS-------");
@@ -56,6 +57,7 @@ public class Peer implements RemoteInterface {
             System.out.println("Key: " + key);
             System.out.println("Value: " + chunks.get(key));
         }
+        System.out.println("Total: " + chunks.size());
     }
 
     public static void main(String[] args) {
@@ -158,7 +160,7 @@ public class Peer implements RemoteInterface {
             return;
         }
 
-        FileManager fileManager = new FileManager(path, replication);
+        FileManager fileManager = new FileManager(path, replication, this.peerId);
         storage.addFile(fileManager);
 
         ArrayList<Chunk> fileChunks = fileManager.getFileChunks();
@@ -202,7 +204,6 @@ public class Peer implements RemoteInterface {
     @Override
     public void delete(String path) {
         // <Version> DELETE <SenderId> <FileId> <CRLF><CRLF>
-        System.out.println("Inside delete");
         File backupFile = new File(path);
 
         if(!backupFile.exists()) {
@@ -236,6 +237,18 @@ public class Peer implements RemoteInterface {
                         }
                     }
                 }
+
+                ConcurrentHashMap<Integer, ArrayList<String>> distribution = this.getStorage().getChunksDistribution();
+                for(Integer key : distribution.keySet()) {
+                    ArrayList<String> f = distribution.get(key);
+                    for(int k = 0; k < files.get(i).getChunkNo(); k++) {
+                        String chunkId = files.get(i).getFileID() + "_" + k;
+                        if(f.contains(chunkId)) {
+                            f.remove(chunkId);
+                        }
+                    }
+                }
+
                 this.getStorage().deleteFile(files.get(i));
                 break;
             }
@@ -254,7 +267,7 @@ public class Peer implements RemoteInterface {
 
     // https://www.tutorialspoint.com/java/java_serialization.htm
     public void deserialization() {
-        System.out.println("Deserializing data");
+        System.out.println("Deserializing data...");
         try {
             String fileName = "peer_" + peerId + "/storage.ser";
             
@@ -276,7 +289,7 @@ public class Peer implements RemoteInterface {
 
     // https://www.tutorialspoint.com/java/java_serialization.htm
     private static void serialization() {
-        System.out.println("Serializing data");
+        System.out.println("Serializing data...");
         try {
             String fileName = "peer_" + getPeerId() + "/storage.ser";
             File directory = new File("peer_" + getPeerId());

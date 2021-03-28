@@ -17,11 +17,13 @@ public class FileManager implements java.io.Serializable {
     private String fileID;
     private ArrayList<Chunk> fileChunks;
     private int chunkNo;
+    private int peerId;
 
-    public FileManager(String path, int replication) {
+    public FileManager(String path, int replication, int peerId) {
         this.path = path;
         this.replication = replication;
         this.fileChunks = new ArrayList<>();
+        this.peerId = peerId;
 
         this.file = new File(path);
         String tempFileID = createFileID();
@@ -59,7 +61,7 @@ public class FileManager implements java.io.Serializable {
         // System.out.println("Last Modified Time: " + lastModifiedTime);
         // System.out.println("File size: " + fileSize);
         
-        String id = fileParent + "__" + fileName + "__" + String.valueOf(lastModifiedTime) + "__" + String.valueOf(fileSize);
+        String id = String.valueOf(this.peerId) + "__" + fileParent + "__" + fileName + "__" + String.valueOf(lastModifiedTime) + "__" + String.valueOf(fileSize);
         return id;
     }
 
