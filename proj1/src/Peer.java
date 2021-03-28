@@ -198,7 +198,32 @@ public class Peer implements RemoteInterface {
 
     @Override
     public void restore(String path) {
+        //<Version> GETCHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+        File backupFile = new File(path);
 
+        if(!backupFile.exists()) {
+            System.out.println("The file - " + path + " - doesn't exist.");
+            return;
+        }
+
+        ArrayList<FileManager> files = this.getStorage().getFilesStored();
+
+        for(int i = 0; i < files.size(); i++) {
+            if(files.get(i).getPath().equals(path)) {
+                // This message does not elicit any response message. An implementation may send this message as many times as it is deemed necessary
+                for(int k = 0; k < files.get(i).getChunkNo(); k++) {
+                    String message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + k + " \r\n\r\n";
+                    try {
+                        this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
+
+                        System.out.println("SENT: " + message);
+                    } catch (Exception e) {
+                        System.err.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     @Override
