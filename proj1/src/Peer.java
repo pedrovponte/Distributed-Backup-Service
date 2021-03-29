@@ -20,8 +20,10 @@ public class Peer implements RemoteInterface {
     private static int peerId;
     private ScheduledThreadPoolExecutor threadExec;
     private static FileStorage storage;
+    private ConcurrentHashMap<String, Integer> receivedChunkMessages;
 
     public Peer(String protocolVersion, int id) {
+        this.receivedChunkMessages = new ConcurrentHashMap<String, Integer>();
         this.protocolVersion = protocolVersion;
         peerId = id;
         System.out.println("ID: " + peerId);
@@ -138,6 +140,20 @@ public class Peer implements RemoteInterface {
         return storage;
     }
 
+    public ConcurrentHashMap<String,Integer> getReceivedChunkMessages() {
+        return this.receivedChunkMessages;
+    }
+
+    public void incrementReceivedChunkMessagesNumber(String chunkId) {
+        Integer number = this.receivedChunkMessages.get(chunkId);
+        if(number == null) {
+            this.receivedChunkMessages.put(chunkId, 1);
+        }
+        else {
+            this.receivedChunkMessages.replace(chunkId, number + 1);
+        }
+    }
+
     public void createChannels(String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress,
             int mdrPort) {
         this.MC = new ChannelController(mcAddress, mcPort, this);
@@ -210,9 +226,8 @@ public class Peer implements RemoteInterface {
 
         for(int i = 0; i < files.size(); i++) {
             if(files.get(i).getPath().equals(path)) {
-                // This message does not elicit any response message. An implementation may send this message as many times as it is deemed necessary
-                for(int k = 0; k < files.get(i).getChunkNo(); k++) {
-                    String message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + k + " \r\n\r\n";
+                for(int j = 0; j < files.get(i).getFileChunks().size(); j++) {
+                    String message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + j + " \r\n\r\n";
                     try {
                         this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
 
@@ -255,7 +270,7 @@ public class Peer implements RemoteInterface {
 
                 ConcurrentHashMap<String,Integer> storedMessages = this.getStorage().getStoredMessagesReceived();
                 for(String key : storedMessages.keySet()) {
-                    for(int k = 0; k < files.get(i).getChunkNo(); k++) {
+                    for(int k = 0; k < files.get(i).getFileChunks().size(); k++) {
                         String chunkId = files.get(i).getFileID() + "_" + k;
                         if(key.equals(chunkId)) {
                             this.getStorage().deleteStoreMessage(chunkId);
@@ -266,7 +281,7 @@ public class Peer implements RemoteInterface {
                 ConcurrentHashMap<Integer, ArrayList<String>> distribution = this.getStorage().getChunksDistribution();
                 for(Integer key : distribution.keySet()) {
                     ArrayList<String> f = distribution.get(key);
-                    for(int k = 0; k < files.get(i).getChunkNo(); k++) {
+                    for(int k = 0; k < files.get(i).getFileChunks().size(); k++) {
                         String chunkId = files.get(i).getFileID() + "_" + k;
                         if(f.contains(chunkId)) {
                             f.remove(chunkId);

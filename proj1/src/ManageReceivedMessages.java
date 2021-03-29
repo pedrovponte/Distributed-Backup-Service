@@ -29,7 +29,7 @@ public class ManageReceivedMessages implements Runnable {
                 this.peer.getThreadExec().execute(new GetChunkMessageThread(this.message, this.peer));
 
             case "CHUNK":
-                this.peer.getThreadExec().execute(new GetChunkThread(this.message, this.peer));
+                this.peer.getThreadExec().execute(new ChunkMessageThread(this.message, this.peer));
                 
             default:
                 break;

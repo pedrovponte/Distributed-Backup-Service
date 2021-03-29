@@ -12,6 +12,7 @@ public class PutChunkMessageThread implements Runnable {
     private String fileId;
     private int chunkNo;
     private int replication_degree;
+    private String protocolVersion;
 
     // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
     public PutChunkMessageThread(byte[] message, Peer peer) {
@@ -19,6 +20,7 @@ public class PutChunkMessageThread implements Runnable {
         this.peer = peer;
         splitHeaderAndBody();
         String[] headerStr = new String(this.header).split(" ");
+        this.protocolVersion = headerStr[0];
         this.senderId = Integer.parseInt(headerStr[2]);
         this.fileId = headerStr[3];
         this.chunkNo = Integer.parseInt(headerStr[4]);
@@ -38,6 +40,8 @@ public class PutChunkMessageThread implements Runnable {
             return;
         }
         // System.out.println("Not equals");
+
+        System.out.println("RECEIVED: " + this.protocolVersion + " PUTCHUNK " + this.senderId + " " + this.fileId + " " + this.chunkNo + " " + this.replication_degree);
 
         //check if the peer already has stored this chunk
         if(this.peer.getStorage().hasChunk(this.fileId, this.chunkNo) == true) {
