@@ -72,6 +72,11 @@ public class Peer implements RemoteInterface {
 
         String protocolVersion = args[0];
 
+        if(protocolVersion != "1.0") {
+            System.out.println("Invalid protocol version: " + protocolVersion);
+            return;
+        }
+
         int peerId = Integer.parseInt(args[1]);
         String serviceAccessPoint = args[2];
         String mcAddress = args[3];
@@ -226,6 +231,7 @@ public class Peer implements RemoteInterface {
 
         for(int i = 0; i < files.size(); i++) {
             if(files.get(i).getPath().equals(path)) {
+                storage.addFileToRestore(files.get(i).getFileID());
                 for(int j = 0; j < files.get(i).getFileChunks().size(); j++) {
                     String message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + j + " \r\n\r\n";
                     try {

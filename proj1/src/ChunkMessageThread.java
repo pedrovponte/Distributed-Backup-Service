@@ -23,12 +23,20 @@ public class ChunkMessageThread implements Runnable{
         String fileId = headerStr[2];
         int chunkNo = Integer.parseInt(headerStr[3]);
 
+        System.out.println("RECEIVED: " + protocolVersion + " CHUNK " + " " + fileId + " " + chunkNo);
+
         String chunkId = fileId + "_" + chunkNo;
         this.peer.incrementReceivedChunkMessagesNumber(chunkId);
-        
-        
 
-        
+        if(this.peer.getPeerId() != senderId) {
+            if(this.peer.getStorage().hasFileToRestore(fileId) && !this.peer.getStorage().hasRegisterToRestore(chunkId)) {
+                this.peer.getStorage().addChunkToRestore(chunkId, this.body);
+                System.out.println("Stored chunk " + chunkNo);
+            }
+            else {
+                System.out.println("Chunk " + chunkNo + " not requested or already have been restored");
+            }
+        }        
     }
 
     public void splitHeaderAndBody() {

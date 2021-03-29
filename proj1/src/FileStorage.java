@@ -15,6 +15,12 @@ public class FileStorage implements java.io.Serializable {
     // key = sendId; value = fileId_chunkNo 
     private ConcurrentHashMap<Integer, ArrayList<String>> chunksDistribution;
 
+    // Array to store all the files that the peer restored as initiator
+    private ArrayList<FileManager> filesRestored;
+
+    // key = fileId_chunkNo; value = chunk_content
+    private ConcurrentHashMap<String, byte[]> chunksRestored;
+
     public FileStorage() {
         this.filesStored = new ArrayList<FileManager>();
         this.chunksStored = new ConcurrentHashMap<String, Chunk>();
@@ -32,6 +38,14 @@ public class FileStorage implements java.io.Serializable {
 
     public ConcurrentHashMap<String,Integer> getStoredMessagesReceived() {
         return this.storedMessagesReceived;
+    }
+
+    public ArrayList<FileManager> getFilesRestored() {
+        return this.filesRestored;
+    }
+
+    public ConcurrentHashMap<String,byte[]> getChunksRestored() {
+        return this.chunksRestored;
     }
 
     public Chunk getChunk(String fileId, int chunkNo) {
@@ -130,6 +144,32 @@ public class FileStorage implements java.io.Serializable {
     public boolean hasRegisterStore(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
         if(this.storedMessagesReceived.containsKey(chunkId)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void addChunkToRestore(String chunkId, byte[] data) {
+        this.chunksRestored.put(chunkId, data);
+    }
+
+    public void addFileToRestore(String fileId) {
+        this.filesRestored.put(fileId);
+    }
+
+    public boolean hasRegisterToRestore(String chunkId) {
+        if(this.chunksRestored.containsKey(chunkId)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public boolean hasFileToRestore(String fileId) {
+        if(this.filesRestored.contains(fileId)) {
             return true;
         }
         else {
