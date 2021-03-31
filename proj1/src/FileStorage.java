@@ -2,7 +2,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class FileStorage implements java.io.Serializable {
-
     // Array to store all the files that the peer received as initiator
     private ArrayList<FileManager> filesStored;
 
@@ -16,7 +15,7 @@ public class FileStorage implements java.io.Serializable {
     private ConcurrentHashMap<Integer, ArrayList<String>> chunksDistribution;
 
     // Array to store all the files that the peer restored as initiator
-    private ArrayList<FileManager> filesRestored;
+    private ArrayList<String> filesRestored;
 
     // key = fileId_chunkNo; value = chunk_content
     private ConcurrentHashMap<String, byte[]> chunksRestored;
@@ -26,6 +25,8 @@ public class FileStorage implements java.io.Serializable {
         this.chunksStored = new ConcurrentHashMap<String, Chunk>();
         this.storedMessagesReceived = new ConcurrentHashMap<String, Integer>();
         this.chunksDistribution = new ConcurrentHashMap<Integer, ArrayList<String>>();
+        this.filesRestored = new ArrayList<String>();
+        this.chunksRestored = new ConcurrentHashMap<String, byte[]>();
     }
 
     public ArrayList<FileManager> getFilesStored() {
@@ -40,7 +41,7 @@ public class FileStorage implements java.io.Serializable {
         return this.storedMessagesReceived;
     }
 
-    public ArrayList<FileManager> getFilesRestored() {
+    public ArrayList<String> getFilesRestored() {
         return this.filesRestored;
     }
 
@@ -156,7 +157,7 @@ public class FileStorage implements java.io.Serializable {
     }
 
     public void addFileToRestore(String fileId) {
-        this.filesRestored.put(fileId);
+        this.filesRestored.add(fileId);
     }
 
     public boolean hasRegisterToRestore(String chunkId) {
@@ -174,6 +175,18 @@ public class FileStorage implements java.io.Serializable {
         }
         else {
             return false;
+        }
+    }
+
+    public void deleteFileRestored(String file) {
+        this.filesRestored.remove(file);
+    }
+
+    public void deleteChunksRestored(String fileId) {
+        for(String key : this.chunksRestored.keySet()) {
+            if((key.split("_")[0]).equals(fileId)) {
+                this.chunksRestored.remove(key);
+            }
         }
     }
 }

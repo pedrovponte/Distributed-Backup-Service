@@ -19,11 +19,11 @@ public class ChunkMessageThread implements Runnable{
         // <Version> CHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
         String[] headerStr = new String(this.header).split(" ");
         String protocolVersion = headerStr[0];
-        int senderId = Integer.parseInt(headerStr[1]);
-        String fileId = headerStr[2];
-        int chunkNo = Integer.parseInt(headerStr[3]);
+        int senderId = Integer.parseInt(headerStr[2]);
+        String fileId = headerStr[3];
+        int chunkNo = Integer.parseInt(headerStr[4]);
 
-        System.out.println("RECEIVED: " + protocolVersion + " CHUNK " + " " + fileId + " " + chunkNo);
+        System.out.println("RECEIVED: " + protocolVersion + " CHUNK " + senderId + " " + fileId + " " + chunkNo);
 
         String chunkId = fileId + "_" + chunkNo;
         this.peer.incrementReceivedChunkMessagesNumber(chunkId);
@@ -31,7 +31,6 @@ public class ChunkMessageThread implements Runnable{
         if(this.peer.getPeerId() != senderId) {
             if(this.peer.getStorage().hasFileToRestore(fileId) && !this.peer.getStorage().hasRegisterToRestore(chunkId)) {
                 this.peer.getStorage().addChunkToRestore(chunkId, this.body);
-                System.out.println("Stored chunk " + chunkNo);
             }
             else {
                 System.out.println("Chunk " + chunkNo + " not requested or already have been restored");

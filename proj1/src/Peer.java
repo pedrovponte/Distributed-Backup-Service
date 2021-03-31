@@ -71,8 +71,9 @@ public class Peer implements RemoteInterface {
         }
 
         String protocolVersion = args[0];
+        System.out.println("Protocol: " + protocolVersion);
 
-        if(protocolVersion != "1.0") {
+        if(!(protocolVersion.equals("1.0"))) {
             System.out.println("Invalid protocol version: " + protocolVersion);
             return;
         }
@@ -181,7 +182,7 @@ public class Peer implements RemoteInterface {
             return;
         }
 
-        FileManager fileManager = new FileManager(path, replication, this.peerId);
+        FileManager fileManager = new FileManager(path, replication, peerId);
         storage.addFile(fileManager);
 
         ArrayList<Chunk> fileChunks = fileManager.getFileChunks();
@@ -243,6 +244,10 @@ public class Peer implements RemoteInterface {
                         e.printStackTrace();
                     }
                 }
+                this.threadExec.schedule(new ManageRestoreThread(this, files.get(i)), 10, TimeUnit.SECONDS);
+            }
+            else {
+                System.out.println("File " + path + " never backed up in this peer");
             }
         }
     }

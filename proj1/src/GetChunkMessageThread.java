@@ -23,12 +23,12 @@ public class GetChunkMessageThread implements Runnable {
         String fileId = messageStr[3];
         int chunkNo = Integer.parseInt(messageStr[4]);
 
-        System.out.println("RECEIVED: " + protocolVersion + " GETCHUNK " + senderId + " " + fileId + " " + chunkNo);
-
         // checks if the senderId is equal to the receiver peerId
         if(this.peer.getPeerId() == senderId) {
             return;
         }
+
+        System.out.println("RECEIVED: " + protocolVersion + " GETCHUNK " + senderId + " " + fileId + " " + chunkNo);
 
         ConcurrentHashMap<String, Chunk> chunksStored = this.peer.getStorage().getChunksStored();
         String chunkId = fileId + "_" + chunkNo;
@@ -64,7 +64,7 @@ public class GetChunkMessageThread implements Runnable {
         }
 
         // <Version> CHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
-        String header = protocolVersion + " CHUNK " + this.peer.getPeerId() + fileId + chunkNo + " \r\n\r\n";
+        String header = protocolVersion + " CHUNK " + this.peer.getPeerId() + " " + fileId + " " + chunkNo + " \r\n\r\n";
 
         try {
             byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
