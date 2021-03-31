@@ -32,6 +32,10 @@ public class ManageReceivedMessages implements Runnable {
             case "CHUNK":
                 this.peer.getThreadExec().execute(new ChunkMessageThread(this.message, this.peer));
                 break;
+
+            case "REMOVED":
+                this.peer.getThreadExec().execute(new RemovedMessageThread(this.message, this.peer));
+                break;
                 
             default:
                 break;

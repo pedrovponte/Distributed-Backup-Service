@@ -308,7 +308,21 @@ public class Peer implements RemoteInterface {
 
     @Override
     public void reclaim(int maximum_disk_space) {
+        // <Version> REMOVED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+        
+        ConcurrentHashMap<String, Chunk> chunksStored = this.getStorage().getChunksStored();
 
+        for(int i = 0; i < chunksStored.size(); i++) {
+            String message = this.protocolVersion + " REMOVED " + peerId + " " + chunksStored.get(i).getFileId() + " " + chunksStored.get(i).getChunkNo() + " \r\n\r\n";
+            try {
+                this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
+
+                System.out.println("SENT: " + message);
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
