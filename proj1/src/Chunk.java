@@ -4,13 +4,15 @@ public class Chunk implements java.io.Serializable {
     private int chunkNo;
     private byte[] chunkMessage;
     private int replication;
+    private int size;
 
 
-    public Chunk(String fileId, int chunkNo, byte[] chunkMessage, int replication) {
+    public Chunk(String fileId, int chunkNo, byte[] chunkMessage, int replication, int size) {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
         this.chunkMessage = chunkMessage;
         this.replication = replication;
+        this.size = size;
     }
 
 
@@ -29,5 +31,10 @@ public class Chunk implements java.io.Serializable {
     public int getReplication() {
         return this.replication;
     }
+
+    public int getSize() {
+        return this.size;
+    }
+
 
 }

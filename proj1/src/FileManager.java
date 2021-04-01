@@ -94,7 +94,7 @@ public class FileManager implements java.io.Serializable {
             while((readBytes = bufferedInputStream.read(buf)) > 0) {
                 byte[] chunkMessage = Arrays.copyOf(buf, readBytes);
 
-                Chunk chunk = new Chunk(fileID, chunkNo, chunkMessage, this.replication);
+                Chunk chunk = new Chunk(fileID, chunkNo, chunkMessage, this.replication, readBytes);
                 this.fileChunks.add(chunk);
 
                 buf = new byte[64000];
@@ -105,7 +105,7 @@ public class FileManager implements java.io.Serializable {
             // one, have the maximum size. The size of the last chunk is always shorter than that size. If the file size is a 
             // multiple of the chunk size, the last chunk has size 0
             if(this.file.length() % 64000 == 0) {
-                Chunk chunk = new Chunk(fileID, chunkNo, null, this.replication);
+                Chunk chunk = new Chunk(fileID, chunkNo, null, this.replication, 0);
                 this.fileChunks.add(chunk);
                 chunkNo++;
             }

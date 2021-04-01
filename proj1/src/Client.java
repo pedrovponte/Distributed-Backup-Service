@@ -72,7 +72,7 @@ public class Client {
                 case "RECLAIM":
                     if(args.length != 3) {
                         System.out.println("Invalid invocation for RECLAIM subprotocol.");
-                        System.out.println("Usage: Client <peer_ap> RECLAIM <maximum_disk_space>");
+                        System.out.println("Usage: Client <peer_ap> RECLAIM <maximum_disk_space_KB>");
                         return;
                     }
 

@@ -4,6 +4,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
+import java.util.*;
 
 public class Peer implements RemoteInterface {
     private ChannelController MC;
@@ -309,18 +311,37 @@ public class Peer implements RemoteInterface {
     @Override
     public void reclaim(int maximum_disk_space) {
         // <Version> REMOVED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-        
-        ConcurrentHashMap<String, Chunk> chunksStored = this.getStorage().getChunksStored();
+        int max_space = maximum_disk_space * 1000;
 
-        for(int i = 0; i < chunksStored.size(); i++) {
-            String message = this.protocolVersion + " REMOVED " + peerId + " " + chunksStored.get(i).getFileId() + " " + chunksStored.get(i).getChunkNo() + " \r\n\r\n";
-            try {
-                this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
+        int occupiedSpace = storage.getPeerOccupiedSpace();
 
-                System.out.println("SENT: " + message);
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
+        int spaceToFree = occupiedSpace - max_space;
+
+        if(spaceToFree > 0) {
+            ConcurrentHashMap<String, Chunk> chunksStored = this.getStorage().getChunksStored();
+            ArrayList<Chunk> chunks = new ArrayList<>();
+
+            for(String key : chunksStored.keySet()) {
+                chunks.add(chunksStored.get(key));
+            }
+
+            // descendant ordered list to start delete biggest chunks first
+            Collections.sort(chunks, Comparator.comparing(Chunk::getSize));
+            Collections.reverse(chunks);
+
+            for(int i = 0; i < chunks.size(); i++) {
+                String chunkId = chunks.get(i).getFileId() + "_" + chunks.get(i).getChunkNo();
+                storage.deleteChunk(chunkId);
+
+                String message = this.protocolVersion + " REMOVED " + peerId + " " + chunksStored.get(i).getFileId() + " " + chunksStored.get(i).getChunkNo() + " \r\n\r\n";
+                try {
+                    this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
+
+                    System.out.println("SENT: " + message);
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
+                    e.printStackTrace();
+                }
             }
         }
     }

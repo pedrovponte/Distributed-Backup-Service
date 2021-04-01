@@ -189,5 +189,14 @@ public class FileStorage implements java.io.Serializable {
             }
         }
     }
+
+    public int getPeerOccupiedSpace() {
+        int total = 0;
+        for(String key : this.chunksStored.keySet()) {
+            total += this.chunksStored.get(key).getSize();
+        }
+
+        return total;
+    }
 }
 

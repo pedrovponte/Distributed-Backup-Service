@@ -57,7 +57,7 @@ public class PutChunkMessageThread implements Runnable {
             return;
         }
 
-        Chunk chunk = new Chunk(this.fileId, this.chunkNo, this.body, this.replication_degree);
+        Chunk chunk = new Chunk(this.fileId, this.chunkNo, this.body, this.replication_degree, this.body.length);
 
         this.peer.getStorage().addChunk(chunk);
         System.out.println("Added chunk: " + this.peer.getStorage().hasChunk(this.fileId, this.chunkNo));

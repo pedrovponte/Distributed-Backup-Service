@@ -27,43 +27,12 @@ public class RemovedMessageThread implements Runnable {
 
         System.out.println("RECEIVED: " + protocolVersion + " REMOVED " + senderId + " " + fileId + " " + chunkNo);
 
-        ConcurrentHashMap<String, Chunk> chunksStored = this.peer.getStorage().getChunksStored();
-        String chunkId = fileId + "_" + chunkNo;
-
-        if((chunksStored.containsKey(chunkId))){
-            System.out.println("Already has chunk " + chunkNo + " stored");
-            // Needs to update local count of chunk
-
-            // If lower than replication
-            //if (          < chunksStored.get(chunkId).getReplication()){
-                
-                Random r = new Random();
-                int low = 0;
-                int high = 400;
-                int result = r.nextInt(high-low) + low;
-
-                // initial chunk messages received
-                Integer initialNumber = this.peer.getReceivedChunkMessages().get(chunkId);
-
-                try {
-                    Thread.sleep(result);
-                } catch(InterruptedException e) {
-                    System.err.println(e.getMessage());
-                    e.printStackTrace();
-                }
-                
-                Integer finalNumber = this.peer.getReceivedChunkMessages().get(chunkId);
-
-                if(initialNumber != finalNumber) {
-                    System.out.println("A peer already has sent chunk " + chunkNo);
-                    return;
-                }
-
-                //this.peer.backup(path, replication);
-            //}
-
-            return;
-        }
+        // verificar se este peer tem guardado o chunk que foi apagado pelo outro peer. Caso nao tenha entao retorna pois nao o pode enviar para outros replicarem;
+        // provavelmente dentro do chunk vai ser preciso criar uma variavel que contenha a replicaçao atual desse chunk, e incrementar essa variavel depois nos sitios onde se recebe os chunks, 
+        // tendo cuidado para nao incrementar com chunks repetidos do mesmo sender (se calhar ate sera preciso apenas recorrer a funçao increment que tem no storage)
+        // dessa maneira pode-se comparar com a variavel replication que ja existe no chunk e assim saber se e preciso replica-lo novamente ou nao
+        // caso a replicaçao atual seja inferior a replicaçao necessaria, entao espera-se um tempo random (como no delete) e volta-se a verificar se a replicaçao do chunk ja esta certa;
+        // caso nao esteja, entao envia-se a mensagem putchunk
 
 
     }   
