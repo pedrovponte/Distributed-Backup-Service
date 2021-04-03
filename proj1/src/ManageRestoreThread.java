@@ -40,18 +40,29 @@ public class ManageRestoreThread implements Runnable {
         String dir = "peer_" + this.peer.getPeerId();
         String restoreDir = "peer_" + this.peer.getPeerId() + "/" + "restore";
         String file = "peer_" + this.peer.getPeerId() + "/" + "restore" + "/" + this.fileManager.getFile().getName();
+        File directory = new File(dir);
         File restoreDirectory = new File(restoreDir);
         File f = new File(file);
 
         try{
-            if(restoreDirectory.exists()) {
-                f.createNewFile();
-            }
-            else {
+            if (!directory.exists()){
+                directory.mkdir();
                 restoreDirectory.mkdir();
                 f.createNewFile();
+            } 
+            else {
+                if (directory.exists()) {
+                    if(restoreDirectory.exists()) {
+                        f.createNewFile();
+                    }
+                    else {
+                        restoreDirectory.mkdir();
+                        f.createNewFile();
+                    }
+                } 
             }
-            
+
+
             FileOutputStream fos = new FileOutputStream(f);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
 

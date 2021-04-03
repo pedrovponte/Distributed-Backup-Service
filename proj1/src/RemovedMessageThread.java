@@ -1,5 +1,8 @@
 import java.util.concurrent.*;
 import java.util.Random;
+import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class RemovedMessageThread implements Runnable {
 
@@ -20,20 +23,94 @@ public class RemovedMessageThread implements Runnable {
         String fileId = messageStr[3];
         int chunkNo = Integer.parseInt(messageStr[4]);
 
+        System.out.println("RECEIVED: " + protocolVersion + " REMOVED " + senderId + " " + fileId + " " + chunkNo);
+
+        this.peer.getStorage().deleteSpecificChunksDistribution(fileId, chunkNo, senderId);
+
         // checks if the senderId is equal to the receiver peerId
         if(this.peer.getPeerId() == senderId) {
+            System.out.println("Equals to sender");
             return;
         }
 
-        System.out.println("RECEIVED: " + protocolVersion + " REMOVED " + senderId + " " + fileId + " " + chunkNo);
+        if(!(this.peer.getStorage().hasChunk(fileId, chunkNo))) {
+            System.out.println("Doesn't have chunk stored");
+            return;
+        }
 
-        // verificar se este peer tem guardado o chunk que foi apagado pelo outro peer. Caso nao tenha entao retorna pois nao o pode enviar para outros replicarem;
-        // provavelmente dentro do chunk vai ser preciso criar uma variavel que contenha a replicaçao atual desse chunk, e incrementar essa variavel depois nos sitios onde se recebe os chunks, 
-        // tendo cuidado para nao incrementar com chunks repetidos do mesmo sender (se calhar ate sera preciso apenas recorrer a funçao increment que tem no storage)
-        // dessa maneira pode-se comparar com a variavel replication que ja existe no chunk e assim saber se e preciso replica-lo novamente ou nao
-        // caso a replicaçao atual seja inferior a replicaçao necessaria, entao espera-se um tempo random (como no delete) e volta-se a verificar se a replicaçao do chunk ja esta certa;
-        // caso nao esteja, entao envia-se a mensagem putchunk
+        ConcurrentHashMap<Integer, ArrayList<String>> distribution = this.peer.getStorage().getChunksDistribution();
+        String chunkId = fileId + "_" + chunkNo;
+        int storedReplicationsBefore = 0;
+
+        // System.out.println("-----REGISTS COUNT STORED BEFORE-------------");
+        // for(Integer key : distribution.keySet()) {
+        //     System.out.println(key + ": " + distribution.get(key));  
+        // }
+        // System.out.println("--------------------------");
 
 
+        for(Integer key : distribution.keySet()) {
+            if(distribution.get(key).contains(chunkId)) {
+                storedReplicationsBefore++;
+            }
+        }
+
+        Chunk chunk = this.peer.getStorage().getChunksStored().get(chunkId);
+
+        if(chunk.getReplication() < storedReplicationsBefore) {
+            System.out.println("Correct replication. Doesn't need to replicate.");
+            return;
+        }
+
+        Random r = new Random();
+        int low = 0;
+        int high = 400;
+        int result = r.nextInt(high-low) + low;
+
+        try {
+            Thread.sleep(result);
+        } catch(InterruptedException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+
+        int storedReplicationsAfter = 0;
+
+        // System.out.println("-----REGISTS COUNT STORED AFTER-------------");
+        // for(Integer key : distribution.keySet()) {
+        //     System.out.println(key + ": " + distribution.get(key));  
+        // }
+        // System.out.println("--------------------------");
+
+
+        for(Integer key : distribution.keySet()) {
+            if(distribution.get(key).contains(chunkId)) {
+                storedReplicationsAfter++;
+            }
+        }
+
+        if(storedReplicationsBefore != storedReplicationsAfter) {
+            System.out.println("Another have already replicate chunk.");
+            return;
+        }
+
+        // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
+        String header = protocolVersion + " PUTCHUNK " + this.peer.getPeerId() + " " + fileId  + " " + chunkNo + " " + chunk.getReplication() + " \r\n\r\n";
+            
+            try {
+                byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
+                byte[] body = chunk.getChunkMessage();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+                outputStream.write(headerBytes);
+                outputStream.write(body);
+                byte[] message = outputStream.toByteArray();
+
+                // send threads
+                this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMDB(), message));
+                System.out.println("SENT: "+ header);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }     
     }   
 }

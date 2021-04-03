@@ -13,6 +13,9 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.FileSystems;
 
 public class Peer implements RemoteInterface {
     private ChannelController MC;
@@ -291,16 +294,7 @@ public class Peer implements RemoteInterface {
                     }
                 }
 
-                ConcurrentHashMap<Integer, ArrayList<String>> distribution = this.getStorage().getChunksDistribution();
-                for(Integer key : distribution.keySet()) {
-                    ArrayList<String> f = distribution.get(key);
-                    for(int k = 0; k < files.get(i).getFileChunks().size(); k++) {
-                        String chunkId = files.get(i).getFileID() + "_" + k;
-                        if(f.contains(chunkId)) {
-                            f.remove(chunkId);
-                        }
-                    }
-                }
+                storage.deleteChunksDistribution(files.get(i).getFileID());
 
                 this.getStorage().deleteFile(files.get(i));
                 break;
@@ -312,6 +306,8 @@ public class Peer implements RemoteInterface {
     public void reclaim(int maximum_disk_space) {
         // <Version> REMOVED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
         int max_space = maximum_disk_space * 1000;
+
+        storage.setCapacity(max_space);
 
         int occupiedSpace = storage.getPeerOccupiedSpace();
 
@@ -333,7 +329,7 @@ public class Peer implements RemoteInterface {
                 String chunkId = chunks.get(i).getFileId() + "_" + chunks.get(i).getChunkNo();
                 storage.deleteChunk(chunkId);
 
-                String message = this.protocolVersion + " REMOVED " + peerId + " " + chunksStored.get(i).getFileId() + " " + chunksStored.get(i).getChunkNo() + " \r\n\r\n";
+                String message = this.protocolVersion + " REMOVED " + peerId + " " + chunks.get(i).getFileId() + " " + chunks.get(i).getChunkNo() + " \r\n\r\n";
                 try {
                     this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
 
@@ -341,6 +337,18 @@ public class Peer implements RemoteInterface {
                 } catch (Exception e) {
                     System.err.println(e.getMessage());
                     e.printStackTrace();
+                }
+
+                spaceToFree -= chunks.get(i).getSize();
+
+                String name = "peer_" + peerId + "/backup/" + chunkId;
+
+                File filename = new File(name);
+
+                filename.delete();
+
+                if(spaceToFree <= 0) {
+                    return;
                 }
             }
         }

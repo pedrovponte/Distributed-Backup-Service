@@ -2,6 +2,7 @@ import java.util.Arrays;
 import java.io.*;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
 
 public class PutChunkMessageThread implements Runnable {
     private byte[] message;
@@ -57,6 +58,20 @@ public class PutChunkMessageThread implements Runnable {
             return;
         }
 
+        ArrayList<FileManager> files = this.peer.getStorage().getFilesStored();
+
+        for(int i = 0; i < files.size(); i++) {
+            if(files.get(i).getFileID().equals(this.fileId)) {
+                System.out.println("Initiator peer of this file (" + files.get(i).getPath() + "). Can't store chunks of this one.");
+                return;
+            }
+        }
+
+        if(!(this.peer.getStorage().checkIfHasSpace(this.body.length))) {
+            System.out.println("Doesn't have space to store chunk " + this.chunkNo);
+            return;
+        }
+
         Chunk chunk = new Chunk(this.fileId, this.chunkNo, this.body, this.replication_degree, this.body.length);
 
         this.peer.getStorage().addChunk(chunk);
@@ -99,6 +114,7 @@ public class PutChunkMessageThread implements Runnable {
 
             FileOutputStream fos = new FileOutputStream(f);
             fos.write(body);
+            fos.close();
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -108,6 +124,7 @@ public class PutChunkMessageThread implements Runnable {
         int low = 0;
         int high = 400;
         int result = r.nextInt(high-low) + low;
+        
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
         String toSend = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + " " + "\r\n\r\n";
         this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()), result, TimeUnit.MILLISECONDS);

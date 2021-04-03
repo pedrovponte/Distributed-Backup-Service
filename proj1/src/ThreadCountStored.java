@@ -26,34 +26,32 @@ public class ThreadCountStored implements Runnable {
     @Override
     public void run() {
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-        /*ConcurrentHashMap<String, Integer> stored = this.peer.getStorage().getStoredMessagesReceived();
-        String chunkId = this.fileId + "_" + this.chunkNo;
-        int storedReplications = 0;
-
-        for(String key : stored.keySet()) {
-            if(key.equals(chunkId)) {
-                storedReplications = stored.get(key);
-                break;
-            }
-        }*/
 
         ConcurrentHashMap<Integer, ArrayList<String>> distribution = this.peer.getStorage().getChunksDistribution();
         String chunkId = this.fileId + "_" + this.chunkNo;
         int storedReplications = 0;
 
+        // System.out.println("-----REGISTS COUNT STORED-------------");
+        // for(Integer key : distribution.keySet()) {
+        //     System.out.println(key + ": " + distribution.get(key));  
+        // }
+        // System.out.println("--------------------------");
+
+
         for(Integer key : distribution.keySet()) {
             if(distribution.get(key).contains(chunkId)) {
                 storedReplications++;
-                //System.out.println("Stored replications of " + chunkId + ": " + storedReplications);
             }
         }
+
+        // System.out.println("Stored replications of " + chunkId + ": " + storedReplications);
         
         if(storedReplications < this.replication && this.tries < 4) {
             this.peer.getThreadExec().execute(new ThreadSendMessages(this.channel, this.message));
             String[] messageArr = (new String(this.message).toString()).split(" ");
             System.out.println("SENT: "+ messageArr[0] + " " + messageArr[1] + " " + messageArr[2] + " " + messageArr[3] + " " + messageArr[4]);
             this.time = this.time * 2;
-            System.out.println("TIME: " + this.time);
+            // System.out.println("TIME: " + this.time);
             this.tries++;
             this.peer.getThreadExec().schedule(this, this.time, TimeUnit.SECONDS);
             // System.out.println("After create thread");

@@ -20,6 +20,8 @@ public class FileStorage implements java.io.Serializable {
     // key = fileId_chunkNo; value = chunk_content
     private ConcurrentHashMap<String, byte[]> chunksRestored;
 
+    private int capacity;
+
     public FileStorage() {
         this.filesStored = new ArrayList<FileManager>();
         this.chunksStored = new ConcurrentHashMap<String, Chunk>();
@@ -27,6 +29,7 @@ public class FileStorage implements java.io.Serializable {
         this.chunksDistribution = new ConcurrentHashMap<Integer, ArrayList<String>>();
         this.filesRestored = new ArrayList<String>();
         this.chunksRestored = new ConcurrentHashMap<String, byte[]>();
+        this.capacity = 100 * 1000 * 1000 * 1000; // 1B * 1000 (1KB) * 1000 (1MB) * 1000 (1GB)
     }
 
     public ArrayList<FileManager> getFilesStored() {
@@ -58,6 +61,14 @@ public class FileStorage implements java.io.Serializable {
 
     public ConcurrentHashMap<Integer,ArrayList<String>> getChunksDistribution() {
         return this.chunksDistribution;
+    }
+
+    public int getCapacity() {
+        return this.capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 
     public void addFile(FileManager file) {
@@ -94,6 +105,10 @@ public class FileStorage implements java.io.Serializable {
             this.storedMessagesReceived.put(chunkId, 1);
             // System.out.println("Not exists regist");
         }
+    }
+
+    public synchronized void addChunksDistribution(int senderId, String fileId, int chunkNo) {
+        String chunkId = fileId + "_" + chunkNo;
 
         if(this.chunksDistribution.containsKey(senderId)) {
             ArrayList<String> f = this.chunksDistribution.get(senderId);
@@ -111,14 +126,50 @@ public class FileStorage implements java.io.Serializable {
             this.chunksDistribution.put(senderId, app);
             //System.out.println("Add sender and regist");
         }
-
-        /*System.out.println("-----REGISTS-------------");
-        for(Integer key : this.chunksDistribution.keySet()) {
-            System.out.println(key + ": " + this.chunksDistribution.get(key));  
-        }
-        System.out.println("--------------------------");*/
+    
+        // System.out.println("-----REGISTS ADD CHUNKS DISTRIBUTION-------------");
+        // for(Integer key : this.chunksDistribution.keySet()) {
+        //     System.out.println(key + ": " + this.chunksDistribution.get(key));  
+        // }
+        // System.out.println("--------------------------");
         // System.out.println("Contains: " + this.storedMessagesReceived.containsKey(chunkId));
     }
+
+    public void deleteChunksDistribution(String fileId) {
+        for(Integer key : this.chunksDistribution.keySet()) {
+            ArrayList<String> f = this.chunksDistribution.get(key);
+            if(f.size() > 0) {
+                for(int i = 0; i < f.size(); i++) {
+                    String chunkId = f.get(i);
+                    String fileIdStored = chunkId.split("_")[0];
+                    if(fileIdStored.equals(fileId)) {
+                        this.chunksDistribution.get(key).remove(chunkId);
+                    }
+                }
+            }
+        }
+        // System.out.println("-----REGISTS DELETE CHUNKS DISTRIBUTION-------------");
+        // for(Integer key : this.chunksDistribution.keySet()) {
+        //     System.out.println(key + ": " + this.chunksDistribution.get(key));  
+        // }
+        // System.out.println("--------------------------");
+    }
+
+    public void deleteSpecificChunksDistribution(String fileId, int chunkNo, int peerId) {
+        String chunkId = fileId + "_" + chunkNo;
+        if(this.chunksDistribution.size() > 0) {
+            if(this.chunksDistribution.get(peerId).size() > 0) {
+                this.chunksDistribution.get(peerId).remove(chunkId);
+            }
+        }
+        
+        // System.out.println("-----REGISTS DELETE SPECIFIC CHUNK-------------");
+        // for(Integer key : this.chunksDistribution.keySet()) {
+        //     System.out.println(key + ": " + this.chunksDistribution.get(key));  
+        // }
+        // System.out.println("--------------------------");
+    }
+
 
     public void deleteChunk(String chunkId) {
         this.chunksStored.remove(chunkId);
@@ -197,6 +248,21 @@ public class FileStorage implements java.io.Serializable {
         }
 
         return total;
+    }
+
+    public int getOccupiedSpace() {
+        int occupiedSpace = 0; 
+        for(String key : this.chunksStored.keySet()) {
+            occupiedSpace += this.chunksStored.get(key).getSize();
+        }
+        return occupiedSpace;
+    }
+
+    public boolean checkIfHasSpace(int chunkSize) {
+        int occupiedSpace = getOccupiedSpace();
+        int finalOccupied = occupiedSpace + chunkSize;
+
+        return finalOccupied < this.capacity;
     }
 }
 

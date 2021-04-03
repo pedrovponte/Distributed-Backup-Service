@@ -31,5 +31,7 @@ public class DeleteMessageThread implements Runnable {
                 System.out.println("RECEIVED: " + new String(this.message));
             }
         }
+
+        this.peer.getStorage().deleteChunksDistribution(fileId);
     }
 }
