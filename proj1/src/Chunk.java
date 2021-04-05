@@ -5,6 +5,7 @@ public class Chunk implements java.io.Serializable {
     private byte[] chunkMessage;
     private int replication;
     private int size;
+    private static final long serialVersionUID = 4066270093854086490L;  
 
 
     public Chunk(String fileId, int chunkNo, byte[] chunkMessage, int replication, int size) {

@@ -17,6 +17,7 @@ public class FileManager implements java.io.Serializable {
     private String fileID;
     private ArrayList<Chunk> fileChunks; 
     private int peerId;
+    private static final long serialVersionUID = 4066270093854086490L;
 
     public FileManager(String path, int replication, int peerId) {
         this.path = path;
@@ -49,6 +50,10 @@ public class FileManager implements java.io.Serializable {
         return this.file;
     }
     
+    public int getReplication() {
+        return this.replication;
+    }
+
     public String createFileID() {
         String fileName = this.file.getName();
         String fileParent = this.file.getParent();

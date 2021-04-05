@@ -4,7 +4,7 @@ Inside src folder: javac *.java
 
 **Start RMI**
 
-Inside src folder: start rmiregistry
+Inside src folder: start rmiregistry / rmiregistry &
 
 **Run Peer**
 

@@ -22,6 +22,8 @@ public class FileStorage implements java.io.Serializable {
 
     private int capacity;
 
+    private static final long serialVersionUID = 4066270093854086490L;
+
     public FileStorage() {
         this.filesStored = new ArrayList<FileManager>();
         this.chunksStored = new ConcurrentHashMap<String, Chunk>();
@@ -29,7 +31,7 @@ public class FileStorage implements java.io.Serializable {
         this.chunksDistribution = new ConcurrentHashMap<Integer, ArrayList<String>>();
         this.filesRestored = new ArrayList<String>();
         this.chunksRestored = new ConcurrentHashMap<String, byte[]>();
-        this.capacity = 100 * 1000 * 1000 * 1000; // 1B * 1000 (1KB) * 1000 (1MB) * 1000 (1GB)
+        this.capacity = 1 * 1000 * 1000 * 1000; // 1B * 1000 (1KB) * 1000 (1MB) * 1000 (1GB)
     }
 
     public ArrayList<FileManager> getFilesStored() {
@@ -263,6 +265,16 @@ public class FileStorage implements java.io.Serializable {
         int finalOccupied = occupiedSpace + chunkSize;
 
         return finalOccupied < this.capacity;
+    }
+
+    public int getPerceivedReplication(String chunkId) {
+        int replication = 0;
+        for(Integer key : this.chunksDistribution.keySet()) {
+            if(this.chunksDistribution.get(key).contains(chunkId)) {
+                replication++;
+            }
+        }
+        return replication;
     }
 }
 

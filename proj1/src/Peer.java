@@ -42,7 +42,7 @@ public class Peer implements RemoteInterface {
             storage = new FileStorage();
         }
 
-        ConcurrentHashMap<String, Integer> stored = this.getStorage().getStoredMessagesReceived();
+        /*ConcurrentHashMap<String, Integer> stored = this.getStorage().getStoredMessagesReceived();
         System.out.println("-------STORED-------");
         for(String key : stored.keySet()) {
             System.out.println("Key: " + key);
@@ -64,7 +64,7 @@ public class Peer implements RemoteInterface {
             System.out.println("Key: " + key);
             System.out.println("Value: " + chunks.get(key));
         }
-        System.out.println("Total: " + chunks.size());
+        System.out.println("Total: " + chunks.size());*/
     }
 
     public static void main(String[] args) {
@@ -356,7 +356,51 @@ public class Peer implements RemoteInterface {
 
     @Override
     public void state() {
-
+        System.out.println();
+        System.out.println("-----FILES BACKED UP-----");
+        if(storage.getFilesStored() != null && !storage.getFilesStored().isEmpty()) {
+            for(int i = 0; i < storage.getFilesStored().size(); i++) {
+                String path = storage.getFilesStored().get(i).getPath();
+                String fileId = storage.getFilesStored().get(i).getFileID();
+                int desiredReplication = storage.getFilesStored().get(i).getReplication();
+                System.out.println("PATHNAME: " + path);
+                System.out.println("FILE ID: " + fileId);
+                System.out.println("DESIRED REPLICATION: " + desiredReplication);
+    
+                System.out.println("-----FILE CHUNKS-----");
+                for(int j = 0; j < storage.getFilesStored().get(i).getFileChunks().size(); j++) {
+                    int chunkNo = storage.getFilesStored().get(i).getFileChunks().get(j).getChunkNo();
+                    String chunkId = fileId + "_" + chunkNo;
+                    System.out.println("CHUNK NO: " + chunkNo);
+                    int perceivedReplication = storage.getPerceivedReplication(chunkId);
+                    System.out.println("PERCEIVED REPLICATION DEGREE: " + perceivedReplication);
+                    System.out.println();
+                }
+                System.out.println("---------------------------");
+            }
+        }
+        
+        System.out.println();
+        System.out.println("-----CHUNKS STORED-----");
+        for(String key : storage.getChunksStored().keySet()) {
+            int chunkNo = storage.getChunksStored().get(key).getChunkNo();
+            int size = storage.getChunksStored().get(key).getSize();
+            int desiredReplication = storage.getChunksStored().get(key).getReplication();
+            String fileId = storage.getChunksStored().get(key).getFileId();
+            String chunkId = fileId + "_" + chunkNo;
+            int perceivedReplication = storage.getPerceivedReplication(chunkId);
+            System.out.println("CHUNK NO: " + chunkNo);
+            System.out.println("SIZE: " + size / 1000 + " KBytes");
+            System.out.println("DESIRED REPLICATION: " + desiredReplication);
+            System.out.println("PERCEIVED REPLICATION: " + perceivedReplication);
+            System.out.println();
+        }
+        
+        System.out.println();
+        int totalCapacity = storage.getCapacity();
+        int occupiedCapacity = storage.getPeerOccupiedSpace();
+        System.out.println("STORAGE CAPACITY: " + totalCapacity / 1000 + " KBytes");
+        System.out.println("USED CAPACITY: " + occupiedCapacity / 1000 + " KBytes");
     }
 
     // https://www.tutorialspoint.com/java/java_serialization.htm
