@@ -1,3 +1,4 @@
+import java.util.concurrent.*;
 import java.util.Arrays;
 import java.io.*;
 import java.util.Random;
@@ -63,6 +64,41 @@ public class PutChunkMessageThread implements Runnable {
         for(int i = 0; i < files.size(); i++) {
             if(files.get(i).getFileID().equals(this.fileId)) {
                 System.out.println("Initiator peer of this file (" + files.get(i).getPath() + "). Can't store chunks of this one.");
+                return;
+            }
+        }
+
+        if(protocolVersion.equals("2.0")){
+
+            String chunkId = this.fileId + "_" + this.chunkNo;
+            int storedReplicationsAfter = 0;
+
+            Random r = new Random();
+            int low = 0;
+            int high = 400;
+            int result = r.nextInt(high-low) + low;
+
+            try {
+                Thread.sleep(result*10);
+            } catch(InterruptedException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            }
+
+            ConcurrentHashMap<Integer, ArrayList<String>> distribution = this.peer.getStorage().getChunksDistribution();
+
+            for(Integer key : distribution.keySet()) {
+                if(distribution.get(key).contains(chunkId)) {
+                    storedReplicationsAfter++;
+                }
+            }
+            
+            System.out.println("TIMER: "+result);
+            System.out.println("Stored " + storedReplicationsAfter);
+
+            if (storedReplicationsAfter >= this.replication_degree)
+            {
+                System.out.println("Replication degree already satisfied");
                 return;
             }
         }
