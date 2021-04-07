@@ -1,3 +1,6 @@
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 public class ManageReceivedMessages implements Runnable {
 
     private Peer peer;
@@ -14,7 +17,11 @@ public class ManageReceivedMessages implements Runnable {
         // System.out.println("Manager message: " + messageStr);
         switch (messageStr[1]){
             case "PUTCHUNK":
-                this.peer.getThreadExec().execute(new PutChunkMessageThread(this.message, this.peer));
+                Random r = new Random();
+                int low = 0;
+                int high = 400;
+                int result = r.nextInt(high-low) + low;
+                this.peer.getThreadExec().schedule(new PutChunkMessageThread(this.message, this.peer), result, TimeUnit.MILLISECONDS);
                 break;
 
             case "STORED":

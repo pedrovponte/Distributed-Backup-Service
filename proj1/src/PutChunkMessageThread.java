@@ -75,11 +75,11 @@ public class PutChunkMessageThread implements Runnable {
 
             Random r = new Random();
             int low = 0;
-            int high = 400;
+            int high = 1000;
             int result = r.nextInt(high-low) + low;
 
             try {
-                Thread.sleep(result*10);
+                Thread.sleep(this.peer.getPeerId() * 123 % 1000);
             } catch(InterruptedException e) {
                 System.err.println(e.getMessage());
                 e.printStackTrace();
@@ -156,14 +156,15 @@ public class PutChunkMessageThread implements Runnable {
             e.printStackTrace();
         }
 
-        Random r = new Random();
-        int low = 0;
-        int high = 400;
-        int result = r.nextInt(high-low) + low;
+        // Random r = new Random();
+        // int low = 0;
+        // int high = 400;
+        // int result = r.nextInt(high-low) + low;
         
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
         String toSend = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + " " + "\r\n\r\n";
-        this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()), result, TimeUnit.MILLISECONDS);
+        //this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()), result, TimeUnit.MILLISECONDS);
+        this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()));
         System.out.println("SENT: " + toSend);
     }
 
