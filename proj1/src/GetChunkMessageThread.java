@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.*;
 import java.nio.charset.StandardCharsets;
+import java.net.*;
 
 public class GetChunkMessageThread implements Runnable {
     private byte[] message;
@@ -66,19 +67,47 @@ public class GetChunkMessageThread implements Runnable {
         // <Version> CHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
         String header = protocolVersion + " CHUNK " + this.peer.getPeerId() + " " + fileId + " " + chunkNo + " \r\n\r\n";
 
-        try {
-            byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
-            byte[] body = chunksStored.get(chunkId).getChunkMessage();
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-            outputStream.write(headerBytes);
-            outputStream.write(body);
-            byte[] message = outputStream.toByteArray();
+        if (protocolVersion == "1.0")
+        {
+            try {
+                byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
+                byte[] body = chunksStored.get(chunkId).getChunkMessage();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+                outputStream.write(headerBytes);
+                outputStream.write(body);
+                byte[] message = outputStream.toByteArray();
+    
+                this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMDR(), message));
+                System.out.println("SENT: " + header);
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            }     
+        }
+        else if (protocolVersion == "2.0")
+        {
+            try (ServerSocket serverSocket = new ServerSocket(6868)) {
+     
+                Socket socket = serverSocket.accept();
+                System.out.println("CONNECTED");
 
-            this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMDR(), message));
-            System.out.println("SENT: " + header);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        }     
+                byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
+                byte[] body = chunksStored.get(chunkId).getChunkMessage();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+                outputStream.write(headerBytes);
+                outputStream.write(body);
+    
+                PrintWriter writer = new PrintWriter(outputStream); 
+
+                writer.println("SENT: " + header);
+    
+                socket.close();
+     
+            } catch (IOException ex) {
+                System.out.println("Exception: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+        
     }
 }
