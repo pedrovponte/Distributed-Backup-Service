@@ -20,6 +20,9 @@ public class FileStorage implements java.io.Serializable {
     // key = fileId_chunkNo; value = chunk_content
     private ConcurrentHashMap<String, byte[]> chunksRestored;
 
+    // key = fileId; value = peerId
+    private ConcurrentHashMap<String, ArrayList<Integer>> filesDeleted;
+
     private int capacity;
 
     private static final long serialVersionUID = 4066270093854086490L;
@@ -31,6 +34,7 @@ public class FileStorage implements java.io.Serializable {
         this.chunksDistribution = new ConcurrentHashMap<Integer, ArrayList<String>>();
         this.filesRestored = new ArrayList<String>();
         this.chunksRestored = new ConcurrentHashMap<String, byte[]>();
+        this.filesDeleted = new ConcurrentHashMap<String, ArrayList<Integer>>();
         this.capacity = 1 * 1000 * 1000 * 1000; // 1B * 1000 (1KB) * 1000 (1MB) * 1000 (1GB)
     }
 
@@ -52,6 +56,10 @@ public class FileStorage implements java.io.Serializable {
 
     public ConcurrentHashMap<String,byte[]> getChunksRestored() {
         return this.chunksRestored;
+    }
+
+    public ConcurrentHashMap<String, ArrayList<Integer>> getFilesDeleted() {
+        return this.filesDeleted;
     }
 
     public Chunk getChunk(String fileId, int chunkNo) {
@@ -147,6 +155,25 @@ public class FileStorage implements java.io.Serializable {
                     if(fileIdStored.equals(fileId)) {
                         this.chunksDistribution.get(key).remove(chunkId);
                     }
+                }
+            }
+        }
+        // System.out.println("-----REGISTS DELETE CHUNKS DISTRIBUTION-------------");
+        // for(Integer key : this.chunksDistribution.keySet()) {
+        //     System.out.println(key + ": " + this.chunksDistribution.get(key));  
+        // }
+        // System.out.println("--------------------------");
+    }
+
+    public void deleteChunksDistribution(String fileId, int peerId) {
+        ArrayList<String> chunks = this.chunksDistribution.get(peerId);
+       
+        if(chunks.size() > 0) {
+            for(int i = 0; i < chunks.size(); i++) {
+                String chunkId = chunks.get(i);
+                String fileIdStored = chunkId.split("_")[0];
+                if(fileIdStored.equals(fileId)) {
+                    this.chunksDistribution.get(peerId).remove(chunkId);
                 }
             }
         }
@@ -275,6 +302,47 @@ public class FileStorage implements java.io.Serializable {
             }
         }
         return replication;
+    }
+
+    public void addDeletedFile(String fileId, int peerId) {
+        if(!this.filesDeleted.containsKey(fileId)) {
+            this.filesDeleted.put(fileId, new ArrayList<Integer>());
+        }
+
+        this.filesDeleted.get(fileId).add(peerId);
+    }
+
+    public ArrayList<String> getFilesToDelete(int peerId) {
+        ArrayList<String> filesToDelete = new ArrayList<String>();
+
+        if(this.chunksDistribution.containsKey(peerId)) {
+            ArrayList<String> chunks = this.chunksDistribution.get(peerId);
+            ArrayList<String> files = new ArrayList<String>();
+            for(int i = 0; i < chunks.size(); i++) {
+                String file = chunks.get(i).split("_")[0];
+                if(!files.contains(file)) {
+                    files.add(file);
+                }
+            }
+
+            for(String key : this.filesDeleted.keySet()) {
+                if(files.contains(key) && !this.filesDeleted.get(key).contains(peerId)) {
+                    filesToDelete.add(key);
+                }
+            }
+        }
+        return filesToDelete;
+    }
+
+    public boolean hasDeletedFile(String fileId) {
+        if(this.filesDeleted.containsKey(fileId)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void removeDeletedFile(String fileId) {
+        this.filesDeleted.remove(fileId);
     }
 }
 

@@ -120,6 +120,13 @@ public class Peer implements RemoteInterface {
         peer.execChannels();
         System.out.println("--- Running Channels ---");
 
+        if(protocolVersion.equals("2.0")) {
+            // <Version> WORKING <PeerId> <CRLF><CRLF>
+            String toSend = protocolVersion + " WORKING " + peerId + " \r\n\r\n";
+            peer.getThreadExec().execute(new ThreadSendMessages(peer.getMC(), toSend.getBytes()));
+            System.out.println("SENT: " + toSend);
+        }
+
         Runtime.getRuntime().addShutdownHook(new Thread(Peer::serialization));
     }
 
@@ -189,6 +196,10 @@ public class Peer implements RemoteInterface {
 
         FileManager fileManager = new FileManager(path, replication, peerId);
         storage.addFile(fileManager);
+
+        if(storage.hasDeletedFile(fileManager.getFileID())) {
+            storage.removeDeletedFile(fileManager.getFileID());
+        }
 
         ArrayList<Chunk> fileChunks = fileManager.getFileChunks();
 
@@ -294,7 +305,9 @@ public class Peer implements RemoteInterface {
                     }
                 }
 
-                storage.deleteChunksDistribution(files.get(i).getFileID());
+                if(this.protocolVersion.equals("1.0")) {
+                    storage.deleteChunksDistribution(files.get(i).getFileID());
+                }
 
                 this.getStorage().deleteFile(files.get(i));
                 break;

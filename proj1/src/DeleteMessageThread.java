@@ -19,6 +19,11 @@ public class DeleteMessageThread implements Runnable {
 
         int senderId = Integer.parseInt(messageStr[2]);
         String fileId = messageStr[3];
+        String version = messageStr[0];
+
+        if(senderId == this.peer.getPeerId()) {
+            return;
+        }
 
         ConcurrentHashMap<String, Chunk> chunks = this.peer.getStorage().getChunksStored();
 
@@ -32,6 +37,16 @@ public class DeleteMessageThread implements Runnable {
             }
         }
 
-        this.peer.getStorage().deleteChunksDistribution(fileId);
+        if(version.equals("1.0")) {
+            this.peer.getStorage().deleteChunksDistribution(fileId);
+        }
+
+        if(version.equals("2.0")) {
+            this.peer.getStorage().deleteChunksDistribution(fileId, this.peer.getPeerId());
+            // <Version> DELETED <SenderId> <InitiatorId> <FileId> <CRLF><CRLF>
+            String toSend = this.peer.getProtocolVersion() + " DELETED " + this.peer.getPeerId() + " " + senderId + " " + fileId + " \r\n\r\n";
+            this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()));
+            System.out.println("SENT: " + toSend);
+        }
     }
 }
