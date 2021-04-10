@@ -144,6 +144,10 @@ public class Peer implements RemoteInterface {
         return this.MDR;
     }
 
+    public TCPChannel getTcpChannel() {
+        return this.tcpChannel;
+    }
+
     public String getProtocolVersion() {
         return this.protocolVersion;
     }

@@ -15,6 +15,17 @@ public class ManageRestoreThread implements Runnable {
 
     @Override
     public void run() {
+        /*try{
+            if (!this.peer.getTcpChannel().getServerSocket().getInetAddress().isReachable(1000))
+            {
+                return;
+            }
+        }
+        catch(Exception e){
+            System.out.println("--- Socket Already Closed ---");
+        }*/
+        
+
         int chunksNumber = this.fileManager.getFileChunks().size();
 
         ConcurrentHashMap<String,byte[]> allChunks = this.peer.getStorage().getChunksRestored();
@@ -82,6 +93,16 @@ public class ManageRestoreThread implements Runnable {
 
             bos.close();
             System.out.println("Restore finished");
+
+            /*try{
+                if (this.peer.getProtocolVersion().equals("2.0")){
+                    this.peer.getTcpChannel().getServerSocket().close();
+                    System.out.println("--- Socket Closed ---");
+                }
+            }
+            catch(Exception e){
+                System.out.println("Failed to close Socket");
+            }*/
 
 
         } catch(Exception e) {
