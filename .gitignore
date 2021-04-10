@@ -2,3 +2,5 @@
 *.class
 
 proj1/src/peer_*/
+
+proj1/src/build

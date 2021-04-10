@@ -178,22 +178,12 @@ public class Peer implements RemoteInterface {
         this.MC = new ChannelController(mcAddress, mcPort, this);
         this.MDB = new ChannelController(mdbAddress, mdbPort, this);
         this.MDR = new ChannelController(mdrAddress, mdrPort, this);
-
-        if (protocolVersion == "2.0"){
-            String hostname = "localhost";
-            int port = 6868;
-    
-            this.tcpChannel = new TCPChannel(hostname, port, this);
-        }
     }
 
     public void execChannels() {
         this.threadExec.execute(this.MC);
         this.threadExec.execute(this.MDB);
         this.threadExec.execute(this.MDR);
-        if (protocolVersion == "2.0"){
-            this.threadExec.execute(this.tcpChannel);
-        }
     }
 
     @Override
@@ -253,6 +243,14 @@ public class Peer implements RemoteInterface {
         if(!backupFile.exists()) {
             System.out.println("The file - " + path + " - doesn't exist.");
             return;
+        }
+
+        if (this.protocolVersion.equals("2.0")){
+            String hostname = "localhost";
+            int port = 6868;
+    
+            this.tcpChannel = new TCPChannel(hostname, port, this);
+            this.threadExec.execute(tcpChannel);
         }
 
         ArrayList<FileManager> files = this.getStorage().getFilesStored();

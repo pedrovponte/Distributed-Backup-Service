@@ -78,12 +78,12 @@ public class PutChunkMessageThread implements Runnable {
             int high = 1000;
             int result = r.nextInt(high-low) + low;
 
-            try {
+            /*try {
                 Thread.sleep(this.peer.getPeerId() * 123 % 1000);
             } catch(InterruptedException e) {
                 System.err.println(e.getMessage());
                 e.printStackTrace();
-            }
+            }*/
 
             ConcurrentHashMap<Integer, ArrayList<String>> distribution = this.peer.getStorage().getChunksDistribution();
 

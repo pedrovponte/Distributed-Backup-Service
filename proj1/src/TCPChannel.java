@@ -5,24 +5,26 @@ import java.io.*;
 import java.net.*;
 
 public class TCPChannel implements Runnable {
-    private InetAddress address;
+    private String address;
     private int port;
     private Peer peer;
+    private ServerSocket serverSocket;
+    private DataInputStream dis;
 
     public TCPChannel(String address, int port, Peer peer) {
-        try{
-            this.address = InetAddress.getByName(address);
-            this.port = port;
-            this.peer = peer;
-        } catch(UnknownHostException e) {
-            System.err.println(e.getMessage());
+        this.address = address;
+        this.port = port;
+        this.peer = peer;
+        try {
+            this.serverSocket = new ServerSocket(this.port);
+        } catch(Exception e) {
             e.printStackTrace();
-        } 
+        }
     }
 
     public void run() {
 
-        try (Socket socket = new Socket(this.address, port)) {
+        /*try (Socket socket = new Socket(this.address, this.port)) {
 
             while(true) {
                 // receive a packet
@@ -47,7 +49,24 @@ public class TCPChannel implements Runnable {
         } catch (IOException ex) {
 
             System.out.println("I/O error: " + ex.getMessage());
+        }*/
+
+        try {
+            Socket socket = this.serverSocket.accept();
+            this.dis = new DataInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        byte[] message = new byte[65000];
+        
+        try {
+            this.dis.read(message);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        this.peer.getThreadExec().execute(new ManageReceivedMessages(this.peer, message));
     }
     
 }

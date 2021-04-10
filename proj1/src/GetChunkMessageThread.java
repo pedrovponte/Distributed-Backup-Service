@@ -67,26 +67,30 @@ public class GetChunkMessageThread implements Runnable {
         // <Version> CHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
         String header = protocolVersion + " CHUNK " + this.peer.getPeerId() + " " + fileId + " " + chunkNo + " \r\n\r\n";
 
-        if (protocolVersion == "1.0")
-        {
-            try {
-                byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
-                byte[] body = chunksStored.get(chunkId).getChunkMessage();
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-                outputStream.write(headerBytes);
-                outputStream.write(body);
-                byte[] message = outputStream.toByteArray();
-    
+        try {
+            byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
+            byte[] body = chunksStored.get(chunkId).getChunkMessage();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+            outputStream.write(headerBytes);
+            outputStream.write(body);
+            byte[] message = outputStream.toByteArray();
+
+            if(protocolVersion.equals("1.0")) {
                 this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMDR(), message));
-                System.out.println("SENT: " + header);
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }     
-        }
-        else if (protocolVersion == "2.0")
-        {
-            try (ServerSocket serverSocket = new ServerSocket(6868)) {
+            }
+
+            else {
+                this.peer.getThreadExec().execute(new ThreadChunkMessage(message));
+            }
+            System.out.println("SENT: " + header);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }     
+        
+        //else if (protocolVersion == "2.0")
+        //{
+            /*try (Socket socket = new Socket("hostname", 6868)) {
      
                 Socket socket = serverSocket.accept();
                 System.out.println("CONNECTED");
@@ -106,8 +110,10 @@ public class GetChunkMessageThread implements Runnable {
             } catch (IOException ex) {
                 System.out.println("Exception: " + ex.getMessage());
                 ex.printStackTrace();
-            }
-        }
+            }*/
+
+
+        //}
         
     }
 }
