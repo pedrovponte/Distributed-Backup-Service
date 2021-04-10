@@ -10,8 +10,11 @@ public class ThreadChunkMessage implements Runnable {
     public ThreadChunkMessage(byte[] message) {
         this.message = message;
 
+        String[] headerStr = new String(message).split(" ");
+        int port = Integer.parseInt(headerStr[3]);
+
         try {
-            Socket socket = new Socket("localhost", 6868);
+            Socket socket = new Socket("localhost", port);
             this.dos = new DataOutputStream(socket.getOutputStream());
         }
         catch(Exception e) {

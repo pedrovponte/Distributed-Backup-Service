@@ -22,6 +22,7 @@ public class Peer implements RemoteInterface {
     private ChannelController MDB;
     private ChannelController MDR;
     private TCPChannel tcpChannel;
+    private int TCPport;
     private String protocolVersion;
     private static int peerId;
     private ScheduledThreadPoolExecutor threadExec;
@@ -247,9 +248,20 @@ public class Peer implements RemoteInterface {
 
         if (this.protocolVersion.equals("2.0")){
             String hostname = "localhost";
-            int port = 6868;
-    
-            this.tcpChannel = new TCPChannel(hostname, port, this);
+            this.TCPport = 6868;
+            
+            try{
+                while (!available(this.TCPport))
+                {
+                    this.TCPport++;
+                }
+                System.out.println("--- TCP Port " + this.TCPport + " ---");
+            }
+            catch(Exception e){
+                System.out.println("No ports available");
+            }
+
+            this.tcpChannel = new TCPChannel(hostname, this.TCPport, this);
             this.threadExec.execute(tcpChannel);
         }
 
@@ -259,7 +271,15 @@ public class Peer implements RemoteInterface {
             if(files.get(i).getPath().equals(path)) {
                 storage.addFileToRestore(files.get(i).getFileID());
                 for(int j = 0; j < files.get(i).getFileChunks().size(); j++) {
-                    String message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + j + " \r\n\r\n";
+                    String message = "";
+                    if (this.protocolVersion == "1.0")
+                    {
+                        message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + j + " \r\n\r\n";
+                    }
+                    else
+                    {
+                        message = this.protocolVersion + " GETCHUNK " + peerId + " " + this.TCPport + " " + files.get(i).getFileID() + " " + j + " \r\n\r\n";
+                    }
                     try {
                         this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));
 
@@ -473,5 +493,44 @@ public class Peer implements RemoteInterface {
         } catch (IOException i) {
             i.printStackTrace();
         }
+    }
+
+    public static final int MIN_PORT_NUMBER = 1100;
+    public static final int MAX_PORT_NUMBER = 49151;
+
+    /**
+     * Checks to see if a specific port is available. Implementation coming from the Apache camel project
+     *
+     * @param port the port to check for availability
+     */
+    public static boolean available(int port) {
+        if (port < MIN_PORT_NUMBER || port > MAX_PORT_NUMBER) {
+            throw new IllegalArgumentException("Invalid start port: " + port);
+        }
+
+        ServerSocket ss = null;
+        DatagramSocket ds = null;
+        try {
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ds = new DatagramSocket(port);
+            ds.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+        } finally {
+            if (ds != null) {
+                ds.close();
+            }
+
+            if (ss != null) {
+                try {
+                    ss.close();
+                } catch (IOException e) {
+                    /* should not be thrown */
+                }
+            }
+        }
+
+        return false;
     }
 }

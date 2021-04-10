@@ -22,6 +22,10 @@ public class TCPChannel implements Runnable {
         }
     }
 
+    public ServerSocket getServerSocket() {
+        return this.serverSocket;
+    }
+
     public void run() {
 
         /*try (Socket socket = new Socket(this.address, this.port)) {
