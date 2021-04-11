@@ -276,13 +276,11 @@ public class Peer implements RemoteInterface {
                 storage.addFileToRestore(files.get(i).getFileID());
                 for(int j = 0; j < files.get(i).getFileChunks().size(); j++) {
                     String message = "";
-                    if (this.protocolVersion == "1.0")
-                    {
+                    if (this.protocolVersion == "1.0") {
                         message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + j + " \r\n\r\n";
                     }
-                    else
-                    {
-                        message = this.protocolVersion + " GETCHUNK " + peerId + " " + this.TCPport + " " + files.get(i).getFileID() + " " + j + " \r\n\r\n";
+                    else {
+                        message = this.protocolVersion + " GETCHUNK " + peerId + " " + files.get(i).getFileID() + " " + j + " " + this.TCPport + " \r\n\r\n";
                     }
                     try {
                         this.threadExec.execute(new ThreadSendMessages(this.MC, message.getBytes(StandardCharsets.US_ASCII)));

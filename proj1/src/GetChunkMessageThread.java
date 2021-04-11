@@ -18,11 +18,17 @@ public class GetChunkMessageThread implements Runnable {
     @Override
     public void run() {
         // <Version> GETCHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+        // <Version> GETCHUNK <SenderId> <FileId> <ChunkNo> <Port> <CRLF><CRLF>
         String[] messageStr = (new String(this.message)).split(" ");
         String protocolVersion = messageStr[0];
         int senderId = Integer.parseInt(messageStr[2]);
         String fileId = messageStr[3];
         int chunkNo = Integer.parseInt(messageStr[4]);
+        int port = 0;
+
+        if(protocolVersion.equals("2.0")) {
+            port = Integer.parseInt(messageStr[5]);
+        }   
 
         // checks if the senderId is equal to the receiver peerId
         if(this.peer.getPeerId() == senderId) {
@@ -80,7 +86,7 @@ public class GetChunkMessageThread implements Runnable {
             }
 
             else {
-                this.peer.getThreadExec().execute(new ThreadChunkMessage(message));
+                this.peer.getThreadExec().execute(new ThreadChunkMessage(message, port));
             }
             System.out.println("SENT: " + header);
         } catch (Exception e) {
