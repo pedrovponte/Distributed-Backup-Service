@@ -51,6 +51,10 @@ public class ManageReceivedMessages implements Runnable {
             case "WORKING":
                 this.peer.getThreadExec().execute(new WorkingMessageThread(this.message, this.peer));
                 break;
+            
+            case "CHUNKTCP":
+                this.peer.getThreadExec().execute(new ChunkTCPMessageThread(this.message, this.peer));
+                break;
                 
             default:
                 break;

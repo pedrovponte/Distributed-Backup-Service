@@ -6,13 +6,14 @@ public class ThreadChunkMessage implements Runnable {
     private byte[] message;
     private String hostname;
     private int port;
+    private Socket socket;
 
     public ThreadChunkMessage(byte[] message, int port) {
         this.message = message;
         this.port = port;
 
         try {
-            Socket socket = new Socket("localhost", this.port);
+            this.socket = new Socket("localhost", this.port);
             this.dos = new DataOutputStream(socket.getOutputStream());
         }
         catch(Exception e) {
@@ -28,7 +29,6 @@ public class ThreadChunkMessage implements Runnable {
         } catch(Exception e) {
             e.printStackTrace();
         }
-		
 	}
     
 }

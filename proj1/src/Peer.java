@@ -28,6 +28,7 @@ public class Peer implements RemoteInterface {
     private ScheduledThreadPoolExecutor threadExec;
     private static FileStorage storage;
     private ConcurrentHashMap<String, Integer> receivedChunkMessages;
+    private ServerSocket serverSocket;
 
     public Peer(String protocolVersion, int id) {
         this.receivedChunkMessages = new ConcurrentHashMap<String, Integer>();
@@ -43,6 +44,15 @@ public class Peer implements RemoteInterface {
         else {
             storage = new FileStorage();
         }
+
+        this.TCPport = 6868 + peerId;
+
+        try {
+            this.serverSocket = new ServerSocket(this.TCPport);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
 
         /*ConcurrentHashMap<String, Integer> stored = this.getStorage().getStoredMessagesReceived();
         System.out.println("-------STORED-------");
@@ -251,21 +261,25 @@ public class Peer implements RemoteInterface {
         }
 
         if (this.protocolVersion.equals("2.0")){
-            String hostname = "localhost";
+            /*String hostname = "localhost";
             this.TCPport = 6868;
             
             try{
-                while (!available(this.TCPport))
-                {
+                while (!available(this.TCPport)){
                     this.TCPport++;
                 }
                 System.out.println("--- TCP Port " + this.TCPport + " ---");
             }
             catch(Exception e){
                 System.out.println("No ports available");
-            }
+            }*/
 
-            this.tcpChannel = new TCPChannel(hostname, this.TCPport, this);
+            /*try {
+                this.serverSocket = new ServerSocket(this.TCPport);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }*/
+            this.tcpChannel = new TCPChannel(this.serverSocket, this);
             this.threadExec.execute(tcpChannel);
         }
 

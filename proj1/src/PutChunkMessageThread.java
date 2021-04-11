@@ -92,9 +92,6 @@ public class PutChunkMessageThread implements Runnable {
                     storedReplicationsAfter++;
                 }
             }
-            
-            System.out.println("TIMER: "+result);
-            System.out.println("Stored " + storedReplicationsAfter);
 
             if (storedReplicationsAfter >= this.replication_degree)
             {

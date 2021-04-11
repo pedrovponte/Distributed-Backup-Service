@@ -48,10 +48,21 @@ public class GetChunkMessageThread implements Runnable {
         // To avoid flooding the host with CHUNK messages, each peer shall wait for a random time uniformly distributed 
         // between 0 and 400 ms, before sending the CHUNK message. If it receives a CHUNK message before that time expires, 
         // it will not send the CHUNK message.
-        Random r = new Random();
         int low = 0;
-        int high = 400;
-        int result = r.nextInt(high-low) + low;
+        int high = 0;
+        int result = 0;
+        Random r = new Random();
+        
+        if(protocolVersion.equals("1.0")){
+            low = 0;
+            high = 400;
+            result = r.nextInt(high-low) + low;
+        }    
+        else {
+            low = 0;
+            high = 1000;
+            result = r.nextInt(high-low) + low;
+        }
 
         // initial chunk messages received
         Integer initialNumber = this.peer.getReceivedChunkMessages().get(chunkId);
@@ -84,7 +95,6 @@ public class GetChunkMessageThread implements Runnable {
             if(protocolVersion.equals("1.0")) {
                 this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMDR(), message));
             }
-
             else {
                 this.peer.getThreadExec().execute(new ThreadChunkMessage(message, port));
             }
@@ -92,34 +102,6 @@ public class GetChunkMessageThread implements Runnable {
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
-        }     
-        
-        //else if (protocolVersion == "2.0")
-        //{
-            /*try (Socket socket = new Socket("hostname", 6868)) {
-     
-                Socket socket = serverSocket.accept();
-                System.out.println("CONNECTED");
-
-                byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
-                byte[] body = chunksStored.get(chunkId).getChunkMessage();
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-                outputStream.write(headerBytes);
-                outputStream.write(body);
-    
-                PrintWriter writer = new PrintWriter(outputStream); 
-
-                writer.println("SENT: " + header);
-    
-                socket.close();
-     
-            } catch (IOException ex) {
-                System.out.println("Exception: " + ex.getMessage());
-                ex.printStackTrace();
-            }*/
-
-
-        //}
-        
+        } 
     }
 }
