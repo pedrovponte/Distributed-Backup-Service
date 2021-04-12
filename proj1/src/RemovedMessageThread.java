@@ -29,12 +29,12 @@ public class RemovedMessageThread implements Runnable {
         int chunkNo = Integer.parseInt(messageStr[4]);
 
         System.out.println("RECEIVED: " + protocolVersion + " REMOVED " + senderId + " " + fileId + " " + chunkNo);
+        System.out.println();
 
         this.peer.getStorage().deleteSpecificChunksDistribution(fileId, chunkNo, senderId);
 
         // checks if the senderId is equal to the receiver peerId
         if(this.peer.getPeerId() == senderId) {
-            System.out.println("Equals to sender");
             return;
         }
 
@@ -62,14 +62,14 @@ public class RemovedMessageThread implements Runnable {
 
         Chunk chunk = this.peer.getStorage().getChunksStored().get(chunkId);
 
-        if(chunk.getReplication() < storedReplicationsBefore) {
+        if(chunk.getReplication() <= storedReplicationsBefore) {
             System.out.println("Correct replication. Doesn't need to replicate.");
             return;
         }
 
         Random r = new Random();
         int low = 0;
-        int high = 400;
+        int high = 1000;
         int result = r.nextInt(high-low) + low;
 
         try {

@@ -89,7 +89,6 @@ public class Peer implements RemoteInterface {
         }
 
         String protocolVersion = args[0];
-        System.out.println("Protocol: " + protocolVersion);
 
         if(!((protocolVersion.equals("1.0")) || (protocolVersion.equals("2.0")))) {
             System.out.println("Invalid protocol version: " + protocolVersion + ". Available versions: '1.0' or '2.0'.");

@@ -48,6 +48,7 @@ public class GetChunkMessageThread implements Runnable {
         // checks if this peer has the chunk stored
         if(!(chunksStored.containsKey(chunkId))){
             System.out.println("Don't have chunk " + chunkNo + " stored");
+            System.out.println();
             return;
         }
 
@@ -86,6 +87,7 @@ public class GetChunkMessageThread implements Runnable {
         // in case the messages number is different, then another peer already has sent that chunk to the initiator peer, so this doesn't need to send again
         if(initialNumber != finalNumber) {
             System.out.println("A peer already has sent chunk " + chunkNo);
+            System.out.println();
             return;
         }
 

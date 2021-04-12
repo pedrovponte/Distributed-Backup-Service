@@ -37,6 +37,7 @@ public class DeleteMessageThread implements Runnable {
                 File filename = new File("peer_" + this.peer.getPeerId() + "/backup/" + key);
                 filename.delete();
                 System.out.println("RECEIVED: " + new String(this.message));
+                System.out.println();
             }
         }
 
@@ -49,8 +50,10 @@ public class DeleteMessageThread implements Runnable {
             this.peer.getStorage().deleteChunksDistribution(fileId, this.peer.getPeerId());
             // <Version> DELETED <SenderId> <InitiatorId> <FileId> <CRLF><CRLF>
             String toSend = this.peer.getProtocolVersion() + " DELETED " + this.peer.getPeerId() + " " + senderId + " " + fileId + " \r\n\r\n";
+            System.out.println();
             this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()));
             System.out.println("SENT: " + toSend);
+            System.out.println();
         }
     }
 }

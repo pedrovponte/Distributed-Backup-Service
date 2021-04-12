@@ -32,6 +32,7 @@ public class DeletedMessageThread implements Runnable {
         }
         
         System.out.println("RECEIVED: " + this.protocolVersion + " DELETED " + this.senderId + " " + this.initiatorId + " " + this.fileId);
+        System.out.println();
 
         // adds the senderId to the list of this fileId in filesDeleted table in order to know that the peer with id senderId has already deleted the chunks of this file
         this.peer.getStorage().addDeletedFile(this.fileId, this.senderId);

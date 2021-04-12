@@ -85,6 +85,7 @@ public class ManageRestoreThread implements Runnable {
 
             bos.close();
             System.out.println("Restore finished");
+            System.out.println();
 
         } catch(Exception e) {
             System.err.println(e.getMessage());

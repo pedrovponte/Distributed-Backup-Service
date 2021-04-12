@@ -47,10 +47,12 @@ public class PutChunkMessageThread implements Runnable {
         }
 
         System.out.println("RECEIVED: " + this.protocolVersion + " PUTCHUNK " + this.senderId + " " + this.fileId + " " + this.chunkNo + " " + this.replication_degree);
+        System.out.println();
 
         //check if the peer already has stored this chunk
         if(this.peer.getStorage().hasChunk(this.fileId, this.chunkNo) == true) {
             System.out.println("Already has chunk");
+            System.out.println();
             Random r = new Random();
             int low = 0;
             int high = 400;
@@ -68,6 +70,7 @@ public class PutChunkMessageThread implements Runnable {
         for(int i = 0; i < files.size(); i++) {
             if(files.get(i).getFileID().equals(this.fileId)) {
                 System.out.println("Initiator peer of this file (" + files.get(i).getPath() + "). Can't store chunks of this one.");
+                System.out.println();
                 return;
             }
         }
@@ -101,6 +104,7 @@ public class PutChunkMessageThread implements Runnable {
             // in this case the replication is achieved
             if (storedReplicationsAfter >= this.replication_degree){
                 System.out.println("Replication degree already satisfied");
+                System.out.println();
                 return;
             }
         }
@@ -108,6 +112,7 @@ public class PutChunkMessageThread implements Runnable {
         // checks if the peer has free space to save the chunk
         if(!(this.peer.getStorage().checkIfHasSpace(this.body.length))) {
             System.out.println("Doesn't have space to store chunk " + this.chunkNo);
+            System.out.println();
             return;
         }
 
@@ -155,6 +160,7 @@ public class PutChunkMessageThread implements Runnable {
         //this.peer.getThreadExec().schedule(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()), result, TimeUnit.MILLISECONDS);
         this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()));
         System.out.println("SENT: " + toSend);
+        System.out.println();
     }
 
     public void splitHeaderAndBody() {

@@ -25,6 +25,7 @@ public class ChunkMessageThread implements Runnable{
         int chunkNo = Integer.parseInt(headerStr[4]);
 
         System.out.println("RECEIVED: " + protocolVersion + " CHUNK " + senderId + " " + fileId + " " + chunkNo);
+        System.out.println();
 
         String chunkId = fileId + "_" + chunkNo;
         this.peer.incrementReceivedChunkMessagesNumber(chunkId);
@@ -35,6 +36,7 @@ public class ChunkMessageThread implements Runnable{
             }
             else {
                 System.out.println("Chunk " + chunkNo + " not requested or already have been restored");
+                System.out.println();
             }
         }        
     }

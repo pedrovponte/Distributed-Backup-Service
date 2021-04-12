@@ -29,6 +29,8 @@ public class StoredMessageThread implements Runnable {
         // System.out.println("File: " + fileId);
         // System.out.println("ChunkNo: " + chunkNo);
 
+        System.out.println("RECEIVED: " + new String(this.message));
+
         // add the regist to the chunksDistribution table. By doing that, all peers know the peers that each one has stored
         this.peer.getStorage().addChunksDistribution(senderId, fileId, chunkNo);
 
@@ -37,9 +39,6 @@ public class StoredMessageThread implements Runnable {
             if(this.peer.getStorage().hasRegisterStore(fileId, chunkNo)) {
                 //System.out.println("Has regist");
                 this.peer.getStorage().incrementStoredMessagesReceived(senderId, fileId, chunkNo);
-                
-
-                System.out.println("RECEIVED: " + new String(this.message));
             }
         }
     }
