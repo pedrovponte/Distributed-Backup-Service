@@ -34,7 +34,7 @@ java Client <peer_ap> DELETE <file_path_name>
 
 ---Test RECLAIM Protocol---
 
-java Client <peer_ap> RECLAIM <space_in_KB>
+java Client <peer_ap> RECLAIM <maximum_disk_space_KB>
 
 ---Test STATE Protocol---
 
@@ -75,7 +75,7 @@ Inside build folder: bash ../../scripts/test.sh <peer_ap> DELETE <file_path_name
 
 ---Test RECLAIM Protocol---
 
-Inside build folder: bash ../../scripts/test.sh <peer_ap> RECLAIM <space_in_KB> <file_path_name
+Inside build folder: bash ../../scripts/test.sh <peer_ap> RECLAIM <maximum_disk_space_KB>
 
 ---Test STATE Protocol---
 

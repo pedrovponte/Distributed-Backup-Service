@@ -50,6 +50,7 @@ public class Peer implements RemoteInterface {
         try {
             this.serverSocket = new ServerSocket(this.TCPport);
         } catch(Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
 
@@ -91,7 +92,7 @@ public class Peer implements RemoteInterface {
         System.out.println("Protocol: " + protocolVersion);
 
         if(!((protocolVersion.equals("1.0")) || (protocolVersion.equals("2.0")))) {
-            System.out.println("Invalid protocol version: " + protocolVersion);
+            System.out.println("Invalid protocol version: " + protocolVersion + ". Available versions: '1.0' or '2.0'.");
             return;
         }
 
@@ -229,6 +230,16 @@ public class Peer implements RemoteInterface {
         }
 
         FileManager fileManager = new FileManager(path, replication, peerId);
+
+        String fileIDNew = fileManager.getFileID();
+
+        for(int i = 0; i < storage.getFilesStored().size(); i++) {
+            if(storage.getFilesStored().get(i).getFileID().equals(fileIDNew)) {
+                System.out.println("File already backed up by this peer.");
+                return;
+            }
+        }
+
         storage.addFile(fileManager);
 
         if(storage.hasDeletedFile(fileManager.getFileID())) {
@@ -436,7 +447,7 @@ public class Peer implements RemoteInterface {
     @Override
     public void state() {
         System.out.println();
-        System.out.println("-----FILES BACKED UP-----");
+        System.out.println("---------FILES BACKED UP---------");
         if(storage.getFilesStored() != null && !storage.getFilesStored().isEmpty()) {
             for(int i = 0; i < storage.getFilesStored().size(); i++) {
                 String path = storage.getFilesStored().get(i).getPath();
@@ -446,7 +457,7 @@ public class Peer implements RemoteInterface {
                 System.out.println("FILE ID: " + fileId);
                 System.out.println("DESIRED REPLICATION: " + desiredReplication);
     
-                System.out.println("-----FILE CHUNKS-----");
+                System.out.println("------FILE CHUNKS------");
                 for(int j = 0; j < storage.getFilesStored().get(i).getFileChunks().size(); j++) {
                     int chunkNo = storage.getFilesStored().get(i).getFileChunks().get(j).getChunkNo();
                     String chunkId = fileId + "_" + chunkNo;
@@ -460,7 +471,7 @@ public class Peer implements RemoteInterface {
         }
         
         System.out.println();
-        System.out.println("-----CHUNKS STORED-----");
+        System.out.println("---------CHUNKS STORED---------");
         for(String key : storage.getChunksStored().keySet()) {
             int chunkNo = storage.getChunksStored().get(key).getChunkNo();
             int size = storage.getChunksStored().get(key).getSize();
@@ -496,6 +507,7 @@ public class Peer implements RemoteInterface {
             in.close();
             fileIn.close();
         } catch (IOException i) {
+            System.err.println(i.getMessage());
             i.printStackTrace();
             return;
         } catch (ClassNotFoundException c) {
@@ -530,42 +542,8 @@ public class Peer implements RemoteInterface {
             out.close();
             fileOut.close();
         } catch (IOException i) {
+            System.err.println(i.getMessage());
             i.printStackTrace();
         }
     }
-
-    /*public static final int MIN_PORT_NUMBER = 1100;
-    public static final int MAX_PORT_NUMBER = 49151;
-
-    
-    public static boolean available(int port) {
-        if (port < MIN_PORT_NUMBER || port > MAX_PORT_NUMBER) {
-            throw new IllegalArgumentException("Invalid start port: " + port);
-        }
-
-        ServerSocket ss = null;
-        DatagramSocket ds = null;
-        try {
-            ss = new ServerSocket(port);
-            ss.setReuseAddress(true);
-            ds = new DatagramSocket(port);
-            ds.setReuseAddress(true);
-            return true;
-        } catch (IOException e) {
-        } finally {
-            if (ds != null) {
-                ds.close();
-            }
-
-            if (ss != null) {
-                try {
-                    ss.close();
-                } catch (IOException e) {
-                    //should not be thrown
-                }
-            }
-        }
-
-        return false;
-    }*/
 }

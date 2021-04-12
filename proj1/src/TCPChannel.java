@@ -34,6 +34,7 @@ public class TCPChannel implements Runnable {
                 this.socket = this.serverSocket.accept();
                 this.dis = new DataInputStream(socket.getInputStream());
             } catch (IOException e) {
+                System.err.println(e.getMessage());
                 e.printStackTrace();
             }
 
@@ -42,6 +43,7 @@ public class TCPChannel implements Runnable {
             try {
                 this.dis.read(message);
             } catch(Exception e) {
+                System.err.println(e.getMessage());
                 e.printStackTrace();
             }
 

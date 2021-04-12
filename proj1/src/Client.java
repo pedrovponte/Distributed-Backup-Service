@@ -17,7 +17,7 @@ public class Client {
             int replication_degree;
             int maximum_disk_space;
 
-            Registry registry = LocateRegistry.getRegistry("localhost"); // deve ser dado nos argumentos?
+            Registry registry = LocateRegistry.getRegistry("localhost");
             RemoteInterface stub = (RemoteInterface) registry.lookup(peer_ap);
 
             switch (subprotocol) {
@@ -102,6 +102,10 @@ public class Client {
                     }
 
                     maximum_disk_space = Integer.parseInt(args[2]);
+
+                    if(maximum_disk_space < 0) {
+                        System.out.println("Maximum disk space must be higher or equal to 0");
+                    }
 
                     /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);

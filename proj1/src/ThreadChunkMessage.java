@@ -19,6 +19,7 @@ public class ThreadChunkMessage implements Runnable {
             this.dos = new DataOutputStream(socket.getOutputStream());
         }
         catch(Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -30,6 +31,7 @@ public class ThreadChunkMessage implements Runnable {
             this.dos.write(this.message);
             this.dos.flush();
         } catch(Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
 	}

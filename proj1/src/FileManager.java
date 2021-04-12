@@ -119,6 +119,7 @@ public class FileManager implements java.io.Serializable {
                 chunkNo++;
             }
         } catch(IOException e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
     }

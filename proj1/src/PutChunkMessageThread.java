@@ -114,7 +114,6 @@ public class PutChunkMessageThread implements Runnable {
         Chunk chunk = new Chunk(this.fileId, this.chunkNo, this.body, this.replication_degree, this.body.length);
 
         this.peer.getStorage().addChunk(chunk);
-        System.out.println("Added chunk: " + this.peer.getStorage().hasChunk(this.fileId, this.chunkNo));
 
         // create the chunk file in the peer directory
         String dir = "peer_" + this.peer.getPeerId();
@@ -147,6 +146,7 @@ public class PutChunkMessageThread implements Runnable {
             fos.close();
 
         } catch(Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
         
