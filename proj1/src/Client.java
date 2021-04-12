@@ -37,7 +37,8 @@ public class Client {
                     }
 
                     replication_degree = Integer.parseInt(args[3]);
-                    if(replication_degree > 9) {
+                    if(replication_degree > 9 || replication_degree < 1) {
+                        System.out.println("Replication degree must be between 1 and 9.");
                         return;
                     }
 

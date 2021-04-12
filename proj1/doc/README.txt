@@ -59,28 +59,28 @@ This should create a <peer_$peer_id> folder inside build.
 remiregistry &
 
 ---Run a peer---
-Inside build folder: sh ../../scripts/peer.sh <protocol_version> <peer_id> <peer_ap> <MC_IP_address> <MC_port> <MDB_IP_address> <MDB_port> <MDR_IP_address> <MDR_port>
+Inside build folder: bash ../../scripts/peer.sh <protocol_version> <peer_id> <peer_ap> <MC_IP_address> <MC_port> <MDB_IP_address> <MDB_port> <MDR_IP_address> <MDR_port>
 
 ---Test BACKUP Protocol---
 
-Inside build folder: sh ../../scripts/test.sh <peer_ap> BACKUP <file_path_name> <replication_degree>
+Inside build folder: bash ../../scripts/test.sh <peer_ap> BACKUP <file_path_name> <replication_degree>
 
 ---Test RESTORE Protocol---
 
-Inside build folder: sh ../../scripts/test.sh <peer_ap> RESTORE <file_path_name>
+Inside build folder: bash ../../scripts/test.sh <peer_ap> RESTORE <file_path_name>
 
 ---Test DELETE Protocol---
 
-Inside build folder: sh ../../scripts/test.sh <peer_ap> DELETE <file_path_name>
+Inside build folder: bash ../../scripts/test.sh <peer_ap> DELETE <file_path_name>
 
 ---Test RECLAIM Protocol---
 
-Inside build folder: sh ../../scripts/test.sh <peer_ap> RECLAIM <space_in_KB> <file_path_name
+Inside build folder: bash ../../scripts/test.sh <peer_ap> RECLAIM <space_in_KB> <file_path_name
 
 ---Test STATE Protocol---
 
-Inside build folder: sh ../../scripts/test.sh <peer_ap> STATE 
+Inside build folder: bash ../../scripts/test.sh <peer_ap> STATE 
 
 ---Clean up peer directory---
 
-Inside build folder: sh ../../scripts/cleanup.sh <peer_id>
+Inside build folder: bash ../../scripts/cleanup.sh <peer_id>
