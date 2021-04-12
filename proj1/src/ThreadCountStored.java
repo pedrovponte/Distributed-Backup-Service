@@ -60,7 +60,7 @@ public class ThreadCountStored implements Runnable {
             // System.out.println("After create thread");
         }
 
-        if(this.tries >= 5) {
+        if(this.tries >= 4) {
             System.out.println("Minimum replication not achieved");
             return;
         }
