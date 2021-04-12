@@ -11,8 +11,10 @@ public class ManageReceivedMessages implements Runnable {
         this.message = message;
     }
 
-    // message: <Version> <MessageType> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
+    
+    // checks the message type and then creates a new thread to treat that message
     public void run() {
+        // message: <Version> <MessageType> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
         String[] messageStr = new String(this.message).split(" ");
         // System.out.println("Manager message: " + messageStr);
         switch (messageStr[1]){

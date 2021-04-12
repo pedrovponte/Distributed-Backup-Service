@@ -1,11 +1,11 @@
 import java.util.concurrent.*;
 import java.util.Arrays;
 public class ChunkMessageThread implements Runnable{
-    
     private byte[] message;
     private Peer peer;
     private byte[] header;
     private byte[] body;
+
 
     public ChunkMessageThread(byte[] message, Peer peer) {
         this.message = message;
@@ -14,6 +14,7 @@ public class ChunkMessageThread implements Runnable{
         
     }
     
+
     @Override
     public void run(){
         // <Version> CHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
@@ -38,6 +39,7 @@ public class ChunkMessageThread implements Runnable{
         }        
     }
 
+    // split message into header and body using <CRLF> as reference to split them
     public void splitHeaderAndBody() {
         int i;
         for(i = 0; i < this.message.length; i++) {

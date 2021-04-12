@@ -10,6 +10,7 @@ public class ChannelController implements Runnable {
     private int port;
     private Peer peer;
 
+
     public ChannelController(String address, int port, Peer peer) {
         try{
             this.address = InetAddress.getByName(address);
@@ -21,8 +22,8 @@ public class ChannelController implements Runnable {
         } 
     }
 
+
     public void sendMessage(byte[] message) {
-        // System.out.println("Message: " + message);
 
         // use multicast socket or datagram socket?
         // Multicast is going to be MUCH more efficient than any form of unicasting, however, multicasting is not reliable,
@@ -36,6 +37,7 @@ public class ChannelController implements Runnable {
         }
     }
 
+
     public void run() {
 
         // maximum size of a chunk is 64KBytes (body)
@@ -46,7 +48,6 @@ public class ChannelController implements Runnable {
         try {
             MulticastSocket multicastSocket = new MulticastSocket(port);
             multicastSocket.joinGroup(address);
-            // System.out.println("ChannelController: Join Multicast Group");
 
             // listens multicast channel
             while(true) {

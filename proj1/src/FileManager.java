@@ -19,6 +19,7 @@ public class FileManager implements java.io.Serializable {
     private int peerId;
     private static final long serialVersionUID = 4066270093854086490L;
 
+
     public FileManager(String path, int replication, int peerId) {
         this.path = path;
         this.replication = replication;
@@ -27,49 +28,50 @@ public class FileManager implements java.io.Serializable {
 
         this.file = new File(path);
         String tempFileID = createFileID();
-        // System.out.println("Temp File ID: " + tempFileID);
         this.fileID = createHash256(tempFileID);
-        // System.out.println("File ID: " + this.fileID);
         splitFile();
-        // System.out.println("Chunks: " + this.fileChunks);
     }
+
 
     public ArrayList<Chunk> getFileChunks() {
         return this.fileChunks;
     }
 
+
     public String getFileID() {
         return this.fileID;
     }
+
 
     public String getPath() {
         return this.path;
     }
 
+
     public File getFile() {
         return this.file;
     }
+
     
     public int getReplication() {
         return this.replication;
     }
+    
 
+    // create fileId using filename, file parent, last modified time and file size
     public String createFileID() {
         String fileName = this.file.getName();
         String fileParent = this.file.getParent();
         long lastModifiedTime = this.file.lastModified();
         long fileSize = this.file.length(); 
-
-        // System.out.println("File name: " + fileName);
-        // System.out.println("File parent: " + fileParent);
-        // System.out.println("Last Modified Time: " + lastModifiedTime);
-        // System.out.println("File size: " + fileSize);
         
         String id = String.valueOf(this.peerId) + "__" + fileParent + "__" + fileName + "__" + String.valueOf(lastModifiedTime) + "__" + String.valueOf(fileSize);
         return id;
     }
 
-    /* https://www.baeldung.com/sha-256-hashing-java */
+
+    // convert fileId into an hash
+    // https://www.baeldung.com/sha-256-hashing-java
     public String createHash256(String toHash) {
         try{
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -89,7 +91,9 @@ public class FileManager implements java.io.Serializable {
         } 
     }
 
-    /* http://all-aboutl.blogspot.com/2012/06/how-to-split-large-files-into-smaller.html */
+
+    // split file into small chunks
+    // http://all-aboutl.blogspot.com/2012/06/how-to-split-large-files-into-smaller.html
     public void splitFile() {
         int readBytes;
         byte[] buf = new byte[64000];

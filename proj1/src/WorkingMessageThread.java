@@ -5,6 +5,7 @@ public class WorkingMessageThread implements Runnable{
     private String protocolVersion;
     private int senderId;
 
+
     // <Version> WORKING <PeerId> <CRLF><CRLF>
     public WorkingMessageThread(byte[] message, Peer peer) {
         this.peer = peer;
@@ -13,6 +14,8 @@ public class WorkingMessageThread implements Runnable{
         this.senderId = Integer.parseInt(headerStr[2]);
     }
 
+
+    // thread that receives the WORKING message and checks if this peer has any regist to send to the sender peer in order to make this one delete chunks that this one has stored
 	@Override
 	public void run() {
 		if(this.peer.getPeerId() == senderId) {

@@ -15,24 +15,20 @@ public class TCPChannel implements Runnable {
     private byte[] header;
     private byte[] body;
 
-    public TCPChannel(/*String address, int port,*/ ServerSocket serverSocket, Peer peer) {
-        //this.address = address;
-        //this.port = port;
+
+    public TCPChannel(ServerSocket serverSocket, Peer peer) {
         this.serverSocket = serverSocket;
         this.peer = peer;
-        /*try {
-            this.serverSocket = new ServerSocket(this.port);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }*/
     }
+
 
     public ServerSocket getServerSocket() {
         return this.serverSocket;
     }
 
-    public void run() {
 
+    // server socket to receive the messages sent by ThreadChunkMessages
+    public void run() {
         while(!this.serverSocket.isClosed()) {
             try {
                 this.socket = this.serverSocket.accept();
@@ -49,7 +45,6 @@ public class TCPChannel implements Runnable {
                 e.printStackTrace();
             }
 
-            //this.peer.getThreadExec().execute(new ManageReceivedMessages(this.peer, message));
             splitHeaderAndBody(message);
             String[] headerStr = new String(this.header).split(" ");
             String protocolVersion = headerStr[0];
@@ -58,11 +53,11 @@ public class TCPChannel implements Runnable {
             int chunkNo = Integer.parseInt(headerStr[4]);
 
             System.out.println("RECEIVED: " + protocolVersion + " CHUNK " + senderId + " " + fileId + " " + chunkNo);
+            // in order to make the other peers know that chunk senderId has sent the chunk chunkNo
             String toSend = protocolVersion + " CHUNKTCP " + senderId + " " + fileId + " " + chunkNo;
             this.peer.getThreadExec().execute(new ThreadSendMessages(this.peer.getMC(), toSend.getBytes()));
 
             String chunkId = fileId + "_" + chunkNo;
-            //this.peer.incrementReceivedChunkMessagesNumber(chunkId);
 
             if(this.peer.getPeerId() != senderId) {
                 if(this.peer.getStorage().hasFileToRestore(fileId) && !this.peer.getStorage().hasRegisterToRestore(chunkId)) {
@@ -74,6 +69,7 @@ public class TCPChannel implements Runnable {
             }        
         }        
     }
+    
 
     public void splitHeaderAndBody(byte[] message) {
         int i;

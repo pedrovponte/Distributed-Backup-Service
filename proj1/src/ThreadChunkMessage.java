@@ -8,6 +8,8 @@ public class ThreadChunkMessage implements Runnable {
     private int port;
     private Socket socket;
 
+
+    // creates the socket to send the CHUNK message
     public ThreadChunkMessage(byte[] message, int port) {
         this.message = message;
         this.port = port;
@@ -20,6 +22,7 @@ public class ThreadChunkMessage implements Runnable {
             e.printStackTrace();
         }
     }
+
 
 	@Override
 	public void run() {

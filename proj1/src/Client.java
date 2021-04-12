@@ -1,3 +1,4 @@
+import java.io.File;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -28,8 +29,14 @@ public class Client {
                     }
 
                     file_path_name = args[2];
+
+                    File fileB = new File(file_path_name);
+                    if(!fileB.exists()) {
+                        System.out.println("File " + file_path_name + " not exists.");
+                        return;
+                    }
+
                     replication_degree = Integer.parseInt(args[3]);
-                    
                     if(replication_degree > 9) {
                         return;
                     }
@@ -38,6 +45,7 @@ public class Client {
                     System.out.println("Subprotocol: " + subprotocol);
                     System.out.println("File path: " + file_path_name);
                     System.out.println("Replication: " + replication_degree);*/
+
                     stub.backup(file_path_name, replication_degree);
                     break;
                 
@@ -49,9 +57,17 @@ public class Client {
                     }
 
                     file_path_name = args[2];
+
+                    File fileR = new File(file_path_name);
+                    if(!fileR.exists()) {
+                        System.out.println("File " + file_path_name + " not exists.");
+                        return;
+                    }
+
                     /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
                     System.out.println("File path: " + file_path_name);*/
+
                     stub.restore(file_path_name);
                     break;
 
@@ -63,9 +79,17 @@ public class Client {
                     }
 
                     file_path_name = args[2];
+
+                    File fileRm = new File(file_path_name);
+                    if(!fileRm.exists()) {
+                        System.out.println("File " + file_path_name + " not exists.");
+                        return;
+                    }
+
                     /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
                     System.out.println("File path: " + file_path_name);*/
+
                     stub.delete(file_path_name);
                     break;
 
@@ -77,9 +101,11 @@ public class Client {
                     }
 
                     maximum_disk_space = Integer.parseInt(args[2]);
+
                     /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);
                     System.out.println("Maximum disk: " + maximum_disk_space);*/
+
                     stub.reclaim(maximum_disk_space);
                     break;
 
@@ -92,6 +118,7 @@ public class Client {
 
                     /*System.out.println("Peer_ap: " + peer_ap);
                     System.out.println("Subprotocol: " + subprotocol);*/
+                    
                     stub.state();
                     break;
 

@@ -13,19 +13,10 @@ public class ManageRestoreThread implements Runnable {
         this.fileManager = fileManager;
     }
 
+
+    // thread that checks if all chunks of a file are restored and then join all of then in a file in order to restore that. Finally, creates the restored file in the restore sub directory
     @Override
     public void run() {
-        /*try{
-            if (!this.peer.getTcpChannel().getServerSocket().getInetAddress().isReachable(1000))
-            {
-                return;
-            }
-        }
-        catch(Exception e){
-            System.out.println("--- Socket Already Closed ---");
-        }*/
-        
-
         int chunksNumber = this.fileManager.getFileChunks().size();
 
         ConcurrentHashMap<String,byte[]> allChunks = this.peer.getStorage().getChunksRestored();
@@ -37,6 +28,7 @@ public class ManageRestoreThread implements Runnable {
             }
         }
 
+        // checks if all file chunks are restored
         if(fileChunks.size() != chunksNumber) {
             System.out.println("ERROR: Not all file chunks have been restored");
             this.peer.getStorage().deleteFileRestored(this.fileManager.getFileID());
@@ -94,18 +86,8 @@ public class ManageRestoreThread implements Runnable {
             bos.close();
             System.out.println("Restore finished");
 
-            /*try{
-                if (this.peer.getProtocolVersion().equals("2.0")){
-                    this.peer.getTcpChannel().getServerSocket().close();
-                    System.out.println("--- Socket Closed ---");
-                }
-            }
-            catch(Exception e){
-                System.out.println("Failed to close Socket");
-            }*/
-
-
         } catch(Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
         

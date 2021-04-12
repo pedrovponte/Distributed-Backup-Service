@@ -5,27 +5,33 @@ public class FileStorage implements java.io.Serializable {
     // Array to store all the files that the peer received as initiator
     private ArrayList<FileManager> filesStored;
 
+    // stores the chunks that the peer has stored and the correspondent fileId
     // key = fileId_chunkNo; value = chunk
     private ConcurrentHashMap<String, Chunk> chunksStored;
 
+    // stores the counter of all STORED messages that the peer has received for each file chunk
     // key = fileId_chunkNo; value = number of stored messages received
     private ConcurrentHashMap<String, Integer> storedMessagesReceived;
 
+    // for each peer, stores all the chunks id that this peer has the perception that they have 
     // key = sendId; value = fileId_chunkNo 
     private ConcurrentHashMap<Integer, ArrayList<String>> chunksDistribution;
 
     // Array to store all the files that the peer restored as initiator
     private ArrayList<String> filesRestored;
 
+    // table to store the chunk info for each chunk that the peer has asked restore
     // key = fileId_chunkNo; value = chunk_content
     private ConcurrentHashMap<String, byte[]> chunksRestored;
 
+    // stores all the fileId of the files that the peer has deleted as initiator
     // key = fileId; value = peerId
     private ConcurrentHashMap<String, ArrayList<Integer>> filesDeleted;
 
     private int capacity;
 
     private static final long serialVersionUID = 4066270093854086490L;
+
 
     public FileStorage() {
         this.filesStored = new ArrayList<FileManager>();
@@ -35,32 +41,39 @@ public class FileStorage implements java.io.Serializable {
         this.filesRestored = new ArrayList<String>();
         this.chunksRestored = new ConcurrentHashMap<String, byte[]>();
         this.filesDeleted = new ConcurrentHashMap<String, ArrayList<Integer>>();
-        this.capacity = 1 * 1000 * 1000 * 1000; // 1B * 1000 (1KB) * 1000 (1MB) * 1000 (1GB)
+        this.capacity = 1 * 1000 * 1000 * 1000; // 1B * 1000 (1KB) * 1000 (1MB) * 1000 (1GB) -> initially, all the peers have 1GB of capacity
     }
+
 
     public ArrayList<FileManager> getFilesStored() {
         return this.filesStored;
     }
 
+
     public ConcurrentHashMap<String,Chunk> getChunksStored() {
         return this.chunksStored;
     }
+
 
     public ConcurrentHashMap<String,Integer> getStoredMessagesReceived() {
         return this.storedMessagesReceived;
     }
 
+
     public ArrayList<String> getFilesRestored() {
         return this.filesRestored;
     }
+
 
     public ConcurrentHashMap<String,byte[]> getChunksRestored() {
         return this.chunksRestored;
     }
 
+
     public ConcurrentHashMap<String, ArrayList<Integer>> getFilesDeleted() {
         return this.filesDeleted;
     }
+
 
     public Chunk getChunk(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
@@ -69,22 +82,28 @@ public class FileStorage implements java.io.Serializable {
         return chunk;
     }
 
+
     public ConcurrentHashMap<Integer,ArrayList<String>> getChunksDistribution() {
         return this.chunksDistribution;
     }
+
 
     public int getCapacity() {
         return this.capacity;
     }
 
+
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
 
+    // adds a file to filesStored
     public void addFile(FileManager file) {
         this.filesStored.add(file);
     }
 
+
+    // adds a chunks to chunksStored
     public void addChunk(Chunk chunk) {
         String fileId = chunk.getFileId();
         int chunkNo = chunk.getChunkNo();
@@ -92,6 +111,8 @@ public class FileStorage implements java.io.Serializable {
         this.chunksStored.put((fileId + "_" + chunkNo), chunk);
     }
 
+
+    // checks if the peer already has the chunk stored
     public boolean hasChunk(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
 
@@ -103,6 +124,8 @@ public class FileStorage implements java.io.Serializable {
         }
     }
 
+
+    // increments the number of stored messages received for the chunkNo of the file fileId coming from peer with id senderId
     public synchronized void incrementStoredMessagesReceived(int senderId, String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
 
@@ -117,6 +140,8 @@ public class FileStorage implements java.io.Serializable {
         }
     }
 
+
+    // adds the chunkid to the senderId list of chunks backed up in chunksDistribution table
     public synchronized void addChunksDistribution(int senderId, String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
 
@@ -145,6 +170,8 @@ public class FileStorage implements java.io.Serializable {
         // System.out.println("Contains: " + this.storedMessagesReceived.containsKey(chunkId));
     }
 
+
+    // deletes the chunkId from all lists inside chunksDistribution table
     public void deleteChunksDistribution(String fileId) {
         for(Integer key : this.chunksDistribution.keySet()) {
             ArrayList<String> f = this.chunksDistribution.get(key);
@@ -165,6 +192,7 @@ public class FileStorage implements java.io.Serializable {
         // System.out.println("--------------------------");
     }
 
+    // deletes all the chunks of the file fileId from the peerId list of chunks backed up in chunksDistribution table
     public void deleteChunksDistribution(String fileId, int peerId) {
         ArrayList<String> chunks = this.chunksDistribution.get(peerId);
        
@@ -184,6 +212,8 @@ public class FileStorage implements java.io.Serializable {
         // System.out.println("--------------------------");
     }
 
+
+    // deletes a specific chunk of the file with fileId from the peerId list of chunks backed up in chunksDistribution table
     public void deleteSpecificChunksDistribution(String fileId, int chunkNo, int peerId) {
         String chunkId = fileId + "_" + chunkNo;
         if(this.chunksDistribution.size() > 0) {
@@ -200,10 +230,12 @@ public class FileStorage implements java.io.Serializable {
     }
 
 
+    // delete chunk from chunksStored list
     public void deleteChunk(String chunkId) {
         this.chunksStored.remove(chunkId);
     }
 
+    // delete file from filesStored list
     public void deleteFile(FileManager file) {
         for(int i = 0; i < filesStored.size(); i++) {
             if(filesStored.get(i).getFileID().equals(file.getFileID())) {
@@ -213,15 +245,21 @@ public class FileStorage implements java.io.Serializable {
         }
     }
 
+
+    // delete stored messages regist of chunkId in storedMessagesReceived
     public void deleteStoreMessage(String chunkId) {
         this.storedMessagesReceived.remove(chunkId);
     }
 
+
+    // create a register in storedMessagesReceived in order to then increment the counter of stored messages of this chunk
     public synchronized void createRegisterToStore(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
         this.storedMessagesReceived.put(chunkId, 0);
     }
 
+
+    // checks if the peer has this chunkId in storedMessagesReceived
     public boolean hasRegisterStore(String fileId, int chunkNo) {
         String chunkId = fileId + "_" + chunkNo;
         if(this.storedMessagesReceived.containsKey(chunkId)) {
@@ -232,10 +270,14 @@ public class FileStorage implements java.io.Serializable {
         }
     }
 
+
+    // add a chunk to chunksRestored 
     public void addChunkToRestore(String chunkId, byte[] data) {
         this.chunksRestored.put(chunkId, data);
     }
 
+
+    // add fileId to filesRestored 
     public void addFileToRestore(String fileId) {
         this.filesRestored.add(fileId);
     }

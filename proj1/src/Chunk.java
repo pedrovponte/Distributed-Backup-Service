@@ -21,22 +21,23 @@ public class Chunk implements java.io.Serializable {
         return this.fileId;
     }
 
+
     public int getChunkNo() {
         return this.chunkNo;
     }
+
 
     public byte[] getChunkMessage() {
         return this.chunkMessage;
     }
 
+
     public int getReplication() {
         return this.replication;
     }
+    
 
     public int getSize() {
         return this.size;
     }
-
-
-
 }

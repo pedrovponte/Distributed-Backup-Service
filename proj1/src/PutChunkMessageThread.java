@@ -16,6 +16,7 @@ public class PutChunkMessageThread implements Runnable {
     private int replication_degree;
     private String protocolVersion;
 
+
     // <Version> PUTCHUNK <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
     public PutChunkMessageThread(byte[] message, Peer peer) {
         this.message = message;
@@ -34,14 +35,16 @@ public class PutChunkMessageThread implements Runnable {
 
     }
 
+
+    // thread that receives a PUTCHUNK message, checks if already has backed up the given chunk, checks if it has space available to store the chunk and then stores the chunk
+    // depending on the protocol version, it can check if the replication degree has already been achieved or not
+    // finally, sends a STORED message
     @Override
     public void run() {
         // in case senderId and peerId are equal, the thread returns because a peer must never store the chunks of its own files.
         if(checkIfSelf() == 1) {
-            // System.out.println("Equals");
             return;
         }
-        // System.out.println("Not equals");
 
         System.out.println("RECEIVED: " + this.protocolVersion + " PUTCHUNK " + this.senderId + " " + this.fileId + " " + this.chunkNo + " " + this.replication_degree);
 
@@ -61,6 +64,7 @@ public class PutChunkMessageThread implements Runnable {
 
         ArrayList<FileManager> files = this.peer.getStorage().getFilesStored();
 
+        // checks if this chunk is part of a file that this peer has backed up. It is for REMOVED messages because in this case the senderId is different from the initiator peerId
         for(int i = 0; i < files.size(); i++) {
             if(files.get(i).getFileID().equals(this.fileId)) {
                 System.out.println("Initiator peer of this file (" + files.get(i).getPath() + "). Can't store chunks of this one.");
@@ -68,8 +72,9 @@ public class PutChunkMessageThread implements Runnable {
             }
         }
 
+        // in this version, it has to check if the wished replication degree had already been achieved before
+        // to do that, first it waits a random time between 0 and 1s before check the replication degree
         if(protocolVersion.equals("2.0")){
-
             String chunkId = this.fileId + "_" + this.chunkNo;
             int storedReplicationsAfter = 0;
 
@@ -93,13 +98,14 @@ public class PutChunkMessageThread implements Runnable {
                 }
             }
 
-            if (storedReplicationsAfter >= this.replication_degree)
-            {
+            // in this case the replication is achieved
+            if (storedReplicationsAfter >= this.replication_degree){
                 System.out.println("Replication degree already satisfied");
                 return;
             }
         }
 
+        // checks if the peer has free space to save the chunk
         if(!(this.peer.getStorage().checkIfHasSpace(this.body.length))) {
             System.out.println("Doesn't have space to store chunk " + this.chunkNo);
             return;
@@ -120,27 +126,18 @@ public class PutChunkMessageThread implements Runnable {
 
         try{
             if (!directory.exists()){
-                // System.out.println("Not exists dir");
                 directory.mkdir();
-                // System.out.println("After mkdir directory");
                 backupDirectory.mkdir();
-                // System.out.println("After mkdir backup");
                 f.createNewFile();
-                // System.out.println("Created file");
             } 
             else {
                 if (directory.exists()) {
-                    // System.out.println("Directory already exists");
                     if(backupDirectory.exists()) {
-                        // System.out.println("Backup directory already exists");
                         f.createNewFile();
-                        // System.out.println("Created file");
                     }
                     else {
                         backupDirectory.mkdir();
-                        // System.out.println("After mkdir backup 1");
                         f.createNewFile();
-                        // System.out.println("Created file");
                     }
                 } 
             }
@@ -152,11 +149,6 @@ public class PutChunkMessageThread implements Runnable {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        // Random r = new Random();
-        // int low = 0;
-        // int high = 400;
-        // int result = r.nextInt(high-low) + low;
         
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
         String toSend = this.peer.getProtocolVersion() + " STORED " + this.peer.getPeerId() + " " + this.fileId + " " + this.chunkNo + " " + "\r\n\r\n";

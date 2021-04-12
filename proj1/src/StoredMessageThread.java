@@ -4,12 +4,15 @@ public class StoredMessageThread implements Runnable {
     private byte[] message;
     private Peer peer;
     private byte[] header;
+
     
     public StoredMessageThread(byte[] message, Peer peer) {
         this.message = message;
         this.peer = peer;
     }
 
+
+    // thread that receives STORED message
     @Override
     public void run() {
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
@@ -26,6 +29,7 @@ public class StoredMessageThread implements Runnable {
         // System.out.println("File: " + fileId);
         // System.out.println("ChunkNo: " + chunkNo);
 
+        // add the regist to the chunksDistribution table. By doing that, all peers know the peers that each one has stored
         this.peer.getStorage().addChunksDistribution(senderId, fileId, chunkNo);
 
         if(this.peer.getPeerId() != senderId) {

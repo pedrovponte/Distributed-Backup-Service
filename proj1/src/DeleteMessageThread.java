@@ -11,6 +11,7 @@ public class DeleteMessageThread implements Runnable {
         this.peer = peer;
     }
 
+    // Thread that receives the DELETE message from the initiator peer, in order to delete all the chunks of the file fileId
     @Override
     public void run() {
         String[] messageStr = (new String(this.message)).split(" ");
@@ -21,12 +22,14 @@ public class DeleteMessageThread implements Runnable {
         String fileId = messageStr[3];
         String version = messageStr[0];
 
+        // if the senderId equals to this peer id, it doesn't have chunks of the file fileId, because it is the initiator peer
         if(senderId == this.peer.getPeerId()) {
             return;
         }
 
         ConcurrentHashMap<String, Chunk> chunks = this.peer.getStorage().getChunksStored();
 
+        // iterate the chunks table of this peer and delete all of them that belong to the deleted file
         for(String key : chunks.keySet()) {
             Chunk chunk = chunks.get(key);
             if(chunk.getFileId().equals(fileId)) {
@@ -41,6 +44,7 @@ public class DeleteMessageThread implements Runnable {
             this.peer.getStorage().deleteChunksDistribution(fileId);
         }
 
+        // send DELETED message (delete enhancement)
         if(version.equals("2.0")) {
             this.peer.getStorage().deleteChunksDistribution(fileId, this.peer.getPeerId());
             // <Version> DELETED <SenderId> <InitiatorId> <FileId> <CRLF><CRLF>

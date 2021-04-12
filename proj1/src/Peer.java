@@ -45,7 +45,7 @@ public class Peer implements RemoteInterface {
             storage = new FileStorage();
         }
 
-        this.TCPport = 6868 + peerId;
+        this.TCPport = 6000 + peerId;
 
         try {
             this.serverSocket = new ServerSocket(this.TCPport);
@@ -130,8 +130,9 @@ public class Peer implements RemoteInterface {
         System.out.println("--- Channels Created ---");
 
         peer.execChannels();
-        System.out.println("--- Running Channels ---");
+        System.out.println("--- Running Channels --- \n\n");
 
+        // sends WORKING message in order to make all the other peers know that this peer is available and get the files deleted information in order to delete them and update chunksDistribution info
         if(protocolVersion.equals("2.0")) {
             // <Version> WORKING <PeerId> <CRLF><CRLF>
             String toSend = protocolVersion + " WORKING " + peerId + " \r\n\r\n";
@@ -139,45 +140,57 @@ public class Peer implements RemoteInterface {
             System.out.println("SENT: " + toSend);
         }
 
+        // serialize data before close peer
         Runtime.getRuntime().addShutdownHook(new Thread(Peer::serialization));
     }
+
 
     public ChannelController getMC() {
         return this.MC;
     }
 
+
     public ChannelController getMDB() {
         return this.MDB;
     }
 
+    
     public ChannelController getMDR() {
         return this.MDR;
     }
 
+    
     public TCPChannel getTcpChannel() {
         return this.tcpChannel;
     }
 
+    
     public String getProtocolVersion() {
         return this.protocolVersion;
     }
 
+    
     public static int getPeerId() {
         return peerId;
     }
 
+    
     public ScheduledThreadPoolExecutor getThreadExec() {
         return this.threadExec;
     }
 
+    
     public FileStorage getStorage() {
         return storage;
     }
 
+    
     public ConcurrentHashMap<String,Integer> getReceivedChunkMessages() {
         return this.receivedChunkMessages;
     }
 
+
+    // increment the number of CHUNK messages received for a given chunkId, in order to know if some peer already has sent the chunk chunkId to the initiator peer
     public void incrementReceivedChunkMessagesNumber(String chunkId) {
         Integer number = this.receivedChunkMessages.get(chunkId);
         if(number == null) {
@@ -188,6 +201,8 @@ public class Peer implements RemoteInterface {
         }
     }
 
+
+    // creates multicast channels
     public void createChannels(String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress,
             int mdrPort) {
         this.MC = new ChannelController(mcAddress, mcPort, this);
@@ -195,11 +210,14 @@ public class Peer implements RemoteInterface {
         this.MDR = new ChannelController(mdrAddress, mdrPort, this);
     }
 
+
+    // 3 different threads executing multicast channels, 1 for each other
     public void execChannels() {
         this.threadExec.execute(this.MC);
         this.threadExec.execute(this.MDB);
         this.threadExec.execute(this.MDR);
     }
+
 
     @Override
     public void backup(String path, int replication) {
@@ -250,6 +268,7 @@ public class Peer implements RemoteInterface {
         }
     }
 
+
     @Override
     public void restore(String path) {
         //<Version> GETCHUNK <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
@@ -261,29 +280,21 @@ public class Peer implements RemoteInterface {
         }
 
         if (this.protocolVersion.equals("2.0")){
-            /*String hostname = "localhost";
-            this.TCPport = 6868;
-            
-            try{
-                while (!available(this.TCPport)){
-                    this.TCPport++;
-                }
-                System.out.println("--- TCP Port " + this.TCPport + " ---");
-            }
-            catch(Exception e){
-                System.out.println("No ports available");
-            }*/
-
-            /*try {
-                this.serverSocket = new ServerSocket(this.TCPport);
-            } catch(Exception e) {
-                e.printStackTrace();
-            }*/
             this.tcpChannel = new TCPChannel(this.serverSocket, this);
             this.threadExec.execute(tcpChannel);
         }
 
         ArrayList<FileManager> files = this.getStorage().getFilesStored();
+        ArrayList<String> filesNames = new ArrayList<String>();
+
+        for(int i = 0; i < files.size(); i++) {
+            filesNames.add(files.get(i).getPath());
+        }
+
+        if(!filesNames.contains(path)){
+            System.out.println("File " + path + " never backed up in this peer");
+            return;
+        }
 
         for(int i = 0; i < files.size(); i++) {
             if(files.get(i).getPath().equals(path)) {
@@ -307,11 +318,9 @@ public class Peer implements RemoteInterface {
                 }
                 this.threadExec.schedule(new ManageRestoreThread(this, files.get(i)), 10, TimeUnit.SECONDS);
             }
-            else {
-                System.out.println("File " + path + " never backed up in this peer");
-            }
         }
     }
+
 
     @Override
     public void delete(String path) {
@@ -324,6 +333,16 @@ public class Peer implements RemoteInterface {
         }
         
         ArrayList<FileManager> files = this.getStorage().getFilesStored();
+        ArrayList<String> filesNames = new ArrayList<String>();
+
+        for(int i = 0; i < files.size(); i++) {
+            filesNames.add(files.get(i).getPath());
+        }
+
+        if(!filesNames.contains(path)){
+            System.out.println("File " + path + " never backed up in this peer");
+            return;
+        }
 
         for(int i = 0; i < files.size(); i++) {
             if(files.get(i).getPath().equals(path)) {
@@ -359,6 +378,7 @@ public class Peer implements RemoteInterface {
             }
         }
     }
+
 
     @Override
     public void reclaim(int maximum_disk_space) {
@@ -412,6 +432,7 @@ public class Peer implements RemoteInterface {
         }
     }
 
+
     @Override
     public void state() {
         System.out.println();
@@ -461,6 +482,7 @@ public class Peer implements RemoteInterface {
         System.out.println("USED CAPACITY: " + occupiedCapacity / 1000 + " KBytes");
     }
 
+
     // https://www.tutorialspoint.com/java/java_serialization.htm
     public void deserialization() {
         System.out.println("Deserializing data...");
@@ -482,6 +504,7 @@ public class Peer implements RemoteInterface {
             return;
         }
     }
+
 
     // https://www.tutorialspoint.com/java/java_serialization.htm
     private static void serialization() {
@@ -511,14 +534,10 @@ public class Peer implements RemoteInterface {
         }
     }
 
-    public static final int MIN_PORT_NUMBER = 1100;
+    /*public static final int MIN_PORT_NUMBER = 1100;
     public static final int MAX_PORT_NUMBER = 49151;
 
-    /**
-     * Checks to see if a specific port is available. Implementation coming from the Apache camel project
-     *
-     * @param port the port to check for availability
-     */
+    
     public static boolean available(int port) {
         if (port < MIN_PORT_NUMBER || port > MAX_PORT_NUMBER) {
             throw new IllegalArgumentException("Invalid start port: " + port);
@@ -542,11 +561,11 @@ public class Peer implements RemoteInterface {
                 try {
                     ss.close();
                 } catch (IOException e) {
-                    /* should not be thrown */
+                    //should not be thrown
                 }
             }
         }
 
         return false;
-    }
+    }*/
 }

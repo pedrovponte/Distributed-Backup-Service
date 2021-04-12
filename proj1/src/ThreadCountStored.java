@@ -13,6 +13,7 @@ public class ThreadCountStored implements Runnable {
     private int tries = 0;
     private int time = 1;
 
+
     public ThreadCountStored(Peer peer, int replication, String fileId, int chunkNo, ChannelController channel, byte[] message) {
         this.peer = peer;
         this.replication = replication;
@@ -23,6 +24,7 @@ public class ThreadCountStored implements Runnable {
     }
 
 
+    // thread that checks if the replication degree of a chunk has already been achieved
     @Override
     public void run() {
         // <Version> STORED <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
@@ -46,6 +48,7 @@ public class ThreadCountStored implements Runnable {
 
         // System.out.println("Stored replications of " + chunkId + ": " + storedReplications);
         
+        // in case the wished replication degree not yet achieved and the number of tries is lower than 4, then it will send the PUTCHUNK message again in order to try to achieve the wated replication
         if(storedReplications < this.replication && this.tries < 4) {
             this.peer.getThreadExec().execute(new ThreadSendMessages(this.channel, this.message));
             String[] messageArr = (new String(this.message).toString()).split(" ");
