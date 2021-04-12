@@ -14,10 +14,10 @@ java Peer <protocol_version> <peer_id> <peer_ap> <MC_IP_address> <MC_port> <MDB_
 (ex.) java Peer 1.0 1 Peer1 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 
 Where:
-    - <protocol_version> is "1.0" (withou enhancements) or "2.0" (with enhancements);
+    - <protocol_version> is "1.0" (without enhancements) or "2.0" (with enhancements);
     - <peer_id> is an integer representing peer unique identifier;
     - <peer_ap> is the access point for RMI object;
-    - <MC_IP_address>, <MDB_IP_address> and <MDR_IP_address> are IP addresses for multicast channels (MC, MDB and MDR channels respectively). The address shoul be in the range 224.0.0.0 to 239.255.255.255;
+    - <MC_IP_address>, <MDB_IP_address> and <MDR_IP_address> are IP addresses for multicast channels (MC, MDB and MDR channels respectively). The address should be in the range 224.0.0.0 to 239.255.255.255;
     - <MC_port>, <MDB_port> and <MDR_port> are ports for multicast channels (MC, MDB and MDR channels respectively)
 
 ---Test BACKUP Protocol---
@@ -40,7 +40,7 @@ java Client <peer_ap> RECLAIM <maximum_disk_space_KB>
 
 java Client <peer_ap> STATE
 
-While running, each peer will create a folder <peer_$peer_id> where it will save the backed up and restore files.
+While running, each peer will create a folder <peer_$peer_id> where it will save the backup and restore files.
 
 
 ---------------WITHOUT SCRIPTS---------------  
